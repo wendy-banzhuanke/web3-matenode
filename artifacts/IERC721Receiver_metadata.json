@@ -1,0 +1,80 @@
+{
+	"compiler": {
+		"version": "0.8.30+commit.73712a01"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "operator",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "from",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "tokenId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bytes",
+						"name": "data",
+						"type": "bytes"
+					}
+				],
+				"name": "onERC721Received",
+				"outputs": [
+					{
+						"internalType": "bytes4",
+						"name": "",
+						"type": "bytes4"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"solidity-demo/contracts/ERC721Demo/IERC721Receiver.sol": "IERC721Receiver"
+		},
+		"evmVersion": "prague",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"solidity-demo/contracts/ERC721Demo/IERC721Receiver.sol": {
+			"keccak256": "0x86dbd5abc54be85ea830ef144ea3b9270a74b90fe4215d9c1dc20195e29713d2",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://8442cd9eede747ba93dfba244fe9771f54a73df7e4e070881af9c11d39acf7a6",
+				"dweb:/ipfs/QmNRBz8DBoZkTNuMzxN9Tb2eNt6rJiE9ovYiW2JVZd8tEp"
+			]
+		}
+	},
+	"version": 1
+}
