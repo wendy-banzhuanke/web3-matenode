@@ -1,0 +1,96 @@
+{
+	"compiler": {
+		"version": "0.8.30+commit.73712a01"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "uint256[]",
+						"name": "_arr",
+						"type": "uint256[]"
+					}
+				],
+				"name": "getSum",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "sum",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "pure",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_erc20Token",
+						"type": "address"
+					},
+					{
+						"internalType": "address[]",
+						"name": "_address",
+						"type": "address[]"
+					},
+					{
+						"internalType": "uint256[]",
+						"name": "_amount",
+						"type": "uint256[]"
+					}
+				],
+				"name": "multiTransferToken",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"solidity-demo/contracts/AirdropDemo/airdrop.sol": "airdrop"
+		},
+		"evmVersion": "prague",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"solidity-demo/contracts/AirdropDemo/airdrop.sol": {
+			"keccak256": "0xc163896b92eb77a79e88045dce8f3631d45729a18734b31565763d70a36f8156",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://6e18a067560ae95a6f635a9d7d2e5f2b97c3da71d3ea6a2df4a4054db213b6ad",
+				"dweb:/ipfs/QmRSmXvb9KYSSe41GdCNzUSxGqAyXrkHxzum9te1tAM9tu"
+			]
+		},
+		"solidity-demo/contracts/ERC20Demo/IERC20.sol": {
+			"keccak256": "0xf796c2df0710626fdcbd59b426f865ac0b7b6c237fb60d071d49d680a6e47228",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://b7d91cd401e6bb86573fc57c900f2dd109b3ea4816c08e8a27eb5360cf0d01f9",
+				"dweb:/ipfs/QmeLnyQzguFR1j7tKLpo4faXisv1WtW4UCW1MLFqm3Yj3N"
+			]
+		}
+	},
+	"version": 1
+}
