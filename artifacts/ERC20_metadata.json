@@ -283,7 +283,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"solidity-demo/contracts/ERC20.sol": "ERC20"
+			"solidity-demo/contracts/ERC20Demo/ERC20.sol": "ERC20"
 		},
 		"evmVersion": "prague",
 		"libraries": {},
@@ -297,7 +297,7 @@
 		"remappings": []
 	},
 	"sources": {
-		"solidity-demo/contracts/ERC20.sol": {
+		"solidity-demo/contracts/ERC20Demo/ERC20.sol": {
 			"keccak256": "0x7d0c5082fb056b304c94611504fde198110f6221fde3d96bee6fcd4bf7b1ba47",
 			"license": "GPL-3.0",
 			"urls": [
@@ -305,7 +305,7 @@
 				"dweb:/ipfs/QmWZRXf8sdYdDnXfuWVPEuxQWD1SjB3JWiXnFq9CRmegj9"
 			]
 		},
-		"solidity-demo/contracts/IERC20.sol": {
+		"solidity-demo/contracts/ERC20Demo/IERC20.sol": {
 			"keccak256": "0xf796c2df0710626fdcbd59b426f865ac0b7b6c237fb60d071d49d680a6e47228",
 			"license": "GPL-3.0",
 			"urls": [

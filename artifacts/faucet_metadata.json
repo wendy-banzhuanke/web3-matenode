@@ -1,0 +1,142 @@
+{
+	"compiler": {
+		"version": "0.8.30+commit.73712a01"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "tokenAddr",
+						"type": "address"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "receiver",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "requestTransfer",
+				"type": "event"
+			},
+			{
+				"inputs": [],
+				"name": "amount",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "erc20TokenAddress",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"name": "requestAddress",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "requestTokens",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "success",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"solidity-demo/contracts/FaucetDemo/faucet.sol": "faucet"
+		},
+		"evmVersion": "prague",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"solidity-demo/contracts/ERC20Demo/IERC20.sol": {
+			"keccak256": "0xf796c2df0710626fdcbd59b426f865ac0b7b6c237fb60d071d49d680a6e47228",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://b7d91cd401e6bb86573fc57c900f2dd109b3ea4816c08e8a27eb5360cf0d01f9",
+				"dweb:/ipfs/QmeLnyQzguFR1j7tKLpo4faXisv1WtW4UCW1MLFqm3Yj3N"
+			]
+		},
+		"solidity-demo/contracts/FaucetDemo/faucet.sol": {
+			"keccak256": "0xcd5f11dc87f6fcbc8bd6d6c83f3337590648cb88599a15bfaf37d71ce2adffe5",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://f10e63e96a0eb76eccd57c829ac74f6998e53fa183ca762b1cca8afc698ad83c",
+				"dweb:/ipfs/Qmdet2PJ4MLRteowRs3xcXZVE8zHuCjSNxgkbZ7T4xGqCV"
+			]
+		}
+	},
+	"version": 1
+}
