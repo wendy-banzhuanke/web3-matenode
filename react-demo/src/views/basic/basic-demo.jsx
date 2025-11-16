@@ -1,12 +1,13 @@
 /*
  * @Author: zhangjian
  * @Date: 2025-11-11 14:14:57
- * @LastEditTime: 2025-11-11 15:07:02
+ * @LastEditTime: 2025-11-16 14:47:08
  * @LastEditors: zhangjian
  * @Description: 基础组件学习
  */
 
 import { useState } from 'react'
+import { useNavigate, Outlet } from 'react-router-dom'
 
 function MyButton({number, onClick}) {
 
@@ -54,6 +55,7 @@ export default function MyApp() {
     size: 90
   }
 
+  const navigate = useNavigate()
   const [number, setNumber] = useState(0)
   
   const handleButtonClick = () => {
@@ -62,6 +64,8 @@ export default function MyApp() {
   
   return (
     <div>
+      {/* <button onClick={() => navigate('/basic')}>react-基础练习</button> */}
+      <button onClick={() => navigate('/basic/todo-list')}>react-TodoList</button>
       <h1>Welcome to my app</h1>
       <p>按钮一：<MyButton number={number} onClick={handleButtonClick} /></p>
       <p>按钮二：<MyButton number={number} onClick={handleButtonClick} /></p>
@@ -76,6 +80,7 @@ export default function MyApp() {
         }} />
 
       <ProductList />
+      <Outlet />
     </div>
   );
 }
