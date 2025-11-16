@@ -1,7 +1,7 @@
 /*
  * @Author: zhangjian
  * @Date: 2025-11-11 14:14:57
- * @LastEditTime: 2025-11-16 14:47:08
+ * @LastEditTime: 2025-11-16 17:11:33
  * @LastEditors: zhangjian
  * @Description: 基础组件学习
  */
@@ -66,6 +66,7 @@ export default function MyApp() {
     <div>
       {/* <button onClick={() => navigate('/basic')}>react-基础练习</button> */}
       <button onClick={() => navigate('/basic/todo-list')}>react-TodoList</button>
+       <button onClick={() => navigate('/basic/reducer-demo')}>react-Reducer</button>
       <h1>Welcome to my app</h1>
       <p>按钮一：<MyButton number={number} onClick={handleButtonClick} /></p>
       <p>按钮二：<MyButton number={number} onClick={handleButtonClick} /></p>
