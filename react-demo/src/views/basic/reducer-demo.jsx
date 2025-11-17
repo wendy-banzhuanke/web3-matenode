@@ -6,7 +6,7 @@
  * @Description: reducer-demo
  */
 
-import { useState, useReducer } from 'react';
+import { useReducer } from 'react';
 import TaskList from "./component/task-list";
 import AddTask from "./component/add-task";
 import tasksReducer from "./taskReducer.js";
