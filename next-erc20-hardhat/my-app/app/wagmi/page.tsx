@@ -1,17 +1,10 @@
-import { WagmiProvider } from 'wagmi'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import Link from 'next/link'
-import Dashboard from './dashboard/page'
-import { config } from '../../utils/wagmi/config'
+import Link from 'next/link';
 
-export default function Wagmi() {
-  const queryClient = new QueryClient()
-
+export default function Page() {
   return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        进入主页：<Dashboard />
-      </QueryClientProvider>
-    </WagmiProvider>
-  )
+    <div>
+      <h1 className="text-2xl font-bold mb-4">Wagmi Demo Home</h1>
+      <Link href="/wagmi/dashboard">进入Dashboard </Link>
+    </div>
+  );
 }
