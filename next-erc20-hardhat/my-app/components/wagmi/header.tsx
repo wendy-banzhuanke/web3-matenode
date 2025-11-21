@@ -1,17 +1,17 @@
 
 'use client';
-import { Button } from "@/components/ui/button"
+import { useConnection } from 'wagmi'
+import { Button } from "../ui/button";
+import { ConnectWallet } from "./connect-wallet";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar"
+import { Account } from './account';
 
-interface WagmiHeaderProps {
-  onConnectWallet: () => void; // 或 () => Promise<void>
-}
-
-export default function wagmiHeader({ onConnectWallet }:WagmiHeaderProps) {
+export default function WagmiHeader() {    
+    const { isConnected } = useConnection();
     return (
         <div className="flex justify-between align-center px-4 py-4 border-b-2 border-b-fuchsia-400">
             <div className="flex align-center">
@@ -25,14 +25,11 @@ export default function wagmiHeader({ onConnectWallet }:WagmiHeaderProps) {
                 <div className="font-bold text-2xl">Wagmi Demo</div>
             </div>
             <div className="flex align-center">
-                <Avatar className="rounded-lg mr-4">
-                    <AvatarImage
-                    src="https://github.com/evilrabbit.png"
-                    alt="@evilrabbit"
-                    />
-                    <AvatarFallback>ER</AvatarFallback>
-                </Avatar>
-                <Button onClick={onConnectWallet}>Connect Wallet</Button>
+                {isConnected ? (
+                    <Account />
+                ) : (
+                    <ConnectWallet />
+                )}
             </div>
         </div>
     )
