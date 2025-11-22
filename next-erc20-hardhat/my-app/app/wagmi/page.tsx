@@ -31,7 +31,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 
 export default function Page() {
-    const { sendTransaction } = useSendTransaction()
+    const { sendTransaction,  isPending: isSending, isError: isSendETHError,  isIdle, isSuccess: isSendETHSuccess } = useSendTransaction()
     const { address } = useConnection()
     const { writeContract,data: hash, isPending, error: submitError, reset } = useWriteContract()
     const { isLoading: isConfirming, isSuccess: isConfirmed, error: confirmError } = useWaitForTransactionReceipt({ hash })
@@ -42,6 +42,7 @@ export default function Page() {
 
     const [inputAmount, setInputAmount] = useState("");
     const [inputToAddress, setInputToAddress] = useState("");
+    const [sendETHTransactionHash, setSendETHTransactionHash] = useState<string | null>(null);
 
     const [inputContractAddress, setInputContractAddress] = useState("");
     const [inputOwnerAddress, setInputOwnerAddress] = useState("");
@@ -51,6 +52,7 @@ export default function Page() {
     const [transferAmount, setTransferAmount] = useState("");
 
     useTransferListeners(!!transferContractAddress ? transferContractAddress as `0x${string}` : (process.env.NEXT_PUBLIC_DEFAULT_CONTRACT_ADDRESS as `0x${string}`))
+    
     const handleSearch = async () => {
         if (!inputAddress.startsWith("0x")) {
             setError("请输入有效的ETH地址（0x开头）");
@@ -85,13 +87,21 @@ export default function Page() {
         setError(null);
         try {
             console.log("sepolia.id", sepolia, sepolia.id)
-            const result = sendTransaction({
+            sendTransaction({
                 chainId: sepolia.id,
                 to: inputToAddress as `0x${string}`,
                 value: parseEther(inputAmount),
                 gas: BigInt(300000), // Sepolia 基础Gas Limit
+            }, {
+                onSuccess: (data) => {
+                    console.log('交易已提交，哈希:', data)
+                    setSendETHTransactionHash(data || "")
+                },
+                onError: (error) => {
+                    console.error('提交错误:', error.message)
+                    setError(error.message || "发送失败")
+                },
             })
-            console.log("handleSendETH result===", result)
             // setError("发送成功: " + result);
         } catch (err) {
             setError("发送失败: " + (err instanceof Error ? err.message : String(err)));
@@ -167,20 +177,20 @@ export default function Page() {
       {/* <Link href="/wagmi/dashboard">进入Dashboard</Link> */}
       <div className='flex justify-center mt-4'>
         <Tabs defaultValue="account" className='w-200'  orientation="vertical">
-            <TabsList onClick={() => setBalance(null)}>
+            <TabsList onClick={() => {setBalance(null); setSendETHTransactionHash(null)}}>
                 <TabsTrigger value="searchBalance">根据地址查询余额</TabsTrigger>
                 <TabsTrigger value="sendETH">向某地址发送ETH</TabsTrigger>
                 <TabsTrigger value="balanceOf">调用ERC-20合约balanceOf方法</TabsTrigger>
-                <TabsTrigger value="listenTransfer">监听ERC-20合约Transfer事件</TabsTrigger>
                 <TabsTrigger value="transfer">实现ERC20token的转账功能</TabsTrigger>
+                <TabsTrigger value="listenTransfer">监听ERC-20合约Transfer事件</TabsTrigger>
             </TabsList>
             {/* 根据地址查询余额 */}
             <TabsContent value="searchBalance">
                 <Card>
                     <CardHeader>
-                    <CardTitle>根据地址查询余额</CardTitle>
+                    <CardTitle>Search balance of</CardTitle>
                     <CardDescription>
-                        输入一个地址，查询该地址的余额
+                        enter the address to search balance
                     </CardDescription>
                     </CardHeader>
                     <CardContent className="flex gap-3">
@@ -215,7 +225,16 @@ export default function Page() {
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button onClick={handleSendETH}>Send ETH</Button>
+                        <div>
+                            <div className='mt-4'>
+                                <Button onClick={handleSendETH} disabled={ isSending }>
+                                    {isSending ? '等待钱包确认...' : 'Send ETH'}
+                                </Button>
+                            </div>
+                            <div className='mt-6'>
+                                {sendETHTransactionHash && <p>转账成功！请在区块浏览器中<a href={`https://sepolia.etherscan.io/tx/${sendETHTransactionHash}`} target='_blank' className='text-blue-700'>查看</a></p>}
+                            </div>
+                        </div>
                     </CardFooter>
                 </Card>
             </TabsContent>
@@ -223,9 +242,9 @@ export default function Page() {
             <TabsContent value="balanceOf">
                 <Card>
                     <CardHeader>
-                        <CardTitle>调用ERC-20合约balanceOf方法</CardTitle>
+                        <CardTitle>Search ERC-20 Contract Balance</CardTitle>
                         <CardDescription>
-                            输入一个地址，查询该地址在合约中的余额
+                            enter the address to search balance of ERC-20 contract
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-6">
@@ -248,17 +267,13 @@ export default function Page() {
                     </CardFooter>
                 </Card>
             </TabsContent>
-            {/* 监听ERC-20合约Transfer事件 */}
-            <TabsContent value="listenTransfer">
-                <TransferList />
-            </TabsContent>
             {/* 实现ERC20token的转账功能 */}
             <TabsContent value="transfer">
                 <Card>
                     <CardHeader>
-                        <CardTitle>实现ERC20token的转账功能</CardTitle>
+                        <CardTitle>Transfer ERC20 Token</CardTitle>
                         <CardDescription>
-                            ERC20token 转账到指定地址
+                            Transfer ERC20 token to specified address
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-6">
@@ -282,11 +297,15 @@ export default function Page() {
                     </CardFooter>
                 </Card>
             </TabsContent>
+            {/* 监听ERC-20合约Transfer事件 */}
+            <TabsContent value="listenTransfer">
+                <TransferList />
+            </TabsContent>
         </Tabs>
       </div>
        <div className='flex justify-center mt-4'>
         {error && <div className="flex justify-center text-red-500">{error}</div>}
-        {!error && (isConfirmed || submitError || confirmError) && <Alert content={ isConfirmed ? '转账成功' : submitError || confirmError ? '转账失败' : '21231' } status={isConfirmed ? 'success' : 'error'} />}
+        {!error && (isConfirmed || submitError || confirmError || !!sendETHTransactionHash) && <Alert content={ (isConfirmed || !!sendETHTransactionHash) ? '转账成功' : submitError || confirmError ? '转账失败' : '' } status={(isConfirmed || !!sendETHTransactionHash) ? 'success' : 'error'} />}
        </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { mainnet, sepolia } from 'wagmi/chains'
 import { walletConnect } from '@wagmi/connectors'
 
 
-const projectId = process.env.PROJECT_ID_KEY ?? "";
+const projectId = process.env.NEXT_PUBLIC_PROJECT_ID_KEY ?? "";
 
 export const config = createConfig({
   chains: [mainnet, sepolia],

@@ -1,7 +1,6 @@
 
 'use client';
 import { useConnection } from 'wagmi'
-import { Button } from "../ui/button";
 import { ConnectWallet } from "./connect-wallet";
 import {
   Avatar,
