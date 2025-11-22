@@ -50,6 +50,7 @@ export default function Page() {
     const [transferContractAddress, setTransferContractAddress] = useState("");
     const [receiveAddress, setReceiveAddress] = useState("");
     const [transferAmount, setTransferAmount] = useState("");
+    const [transferTransactionHash, setTransferTransactionHash] = useState<string | null>(null);
 
     useTransferListeners(!!transferContractAddress ? transferContractAddress as `0x${string}` : (process.env.NEXT_PUBLIC_DEFAULT_CONTRACT_ADDRESS as `0x${string}`))
     
@@ -157,6 +158,7 @@ export default function Page() {
             }, {
                 onSuccess: (hash) => {
                     console.log('交易已提交，哈希:', hash)
+                    setTransferTransactionHash(hash)
                 },
                 onError: (error) => {
                     console.error('提交错误:', error.message)
@@ -177,7 +179,7 @@ export default function Page() {
       {/* <Link href="/wagmi/dashboard">进入Dashboard</Link> */}
       <div className='flex justify-center mt-4'>
         <Tabs defaultValue="account" className='w-200'  orientation="vertical">
-            <TabsList onClick={() => {setBalance(null); setSendETHTransactionHash(null)}}>
+            <TabsList onClick={() => {setBalance(null); setSendETHTransactionHash(null); setTransferTransactionHash(null)}}>
                 <TabsTrigger value="searchBalance">根据地址查询余额</TabsTrigger>
                 <TabsTrigger value="sendETH">向某地址发送ETH</TabsTrigger>
                 <TabsTrigger value="balanceOf">调用ERC-20合约balanceOf方法</TabsTrigger>
@@ -291,9 +293,16 @@ export default function Page() {
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button onClick={handleTransfer} disabled={isPending || isConfirming}>
-                            {isPending ? '等待钱包确认...' : isConfirming ? '交易确认中...' : 'Transfer'}
-                        </Button>
+                        <div>
+                            <div className='mt-6'>
+                                <Button onClick={handleTransfer} disabled={isPending || isConfirming}>
+                                    {isPending ? '等待钱包确认...' : isConfirming ? '交易确认中...' : 'Transfer'}
+                                </Button>
+                            </div>
+                            <div className='mt-6'>
+                                {(isConfirmed && transferTransactionHash) && <p>转账成功！请在区块浏览器中<a href={`https://sepolia.etherscan.io/tx/${transferTransactionHash}`} target='_blank' className='text-blue-700'>查看</a></p>}
+                            </div>
+                        </div>
                     </CardFooter>
                 </Card>
             </TabsContent>
