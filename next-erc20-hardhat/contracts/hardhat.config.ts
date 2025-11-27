@@ -1,3 +1,10 @@
+/*
+ * @Author: zhangjian
+ * @Date: 2025-11-18 14:28:55
+ * @LastEditTime: 2025-11-26 11:30:22
+ * @LastEditors: zhangjian
+ * @Description: hardhat 配置文件
+ */
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-verify";
