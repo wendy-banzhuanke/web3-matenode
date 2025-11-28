@@ -1,3 +1,10 @@
+/*
+ * @Author: zhangjian
+ * @Date: 2025-11-21 10:22:23
+ * @LastEditTime: 2025-11-28 15:04:19
+ * @LastEditors: zhangjian
+ * @Description: 描述
+ */
 import * as React from 'react';
 import { Connector, useChainId, useConnect, useConnectors } from 'wagmi';
 import {

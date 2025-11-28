@@ -1,3 +1,10 @@
+/*
+ * @Author: zhangjian
+ * @Date: 2025-11-20 13:52:22
+ * @LastEditTime: 2025-11-28 14:57:37
+ * @LastEditors: zhangjian
+ * @Description: 描述
+ */
 import { createConfig, fallback, http } from 'wagmi'
 import { mainnet, sepolia } from 'wagmi/chains'
 import { walletConnect } from '@wagmi/connectors'
