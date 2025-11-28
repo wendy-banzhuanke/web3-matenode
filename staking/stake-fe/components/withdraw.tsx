@@ -1,7 +1,7 @@
 /*
  * @Author: zhangjian
  * @Date: 2025-11-28 10:46:15
- * @LastEditTime: 2025-11-28 17:24:39
+ * @LastEditTime: 2025-11-28 17:36:36
  * @LastEditors: zhangjian
  * @Description: 质押组件
  */
@@ -36,15 +36,15 @@ export default function Stake() {
   }]
 
   return (
-    <div className="w-full p-8">
+    <div className="w-full p-4 pt-6">
       {/* flex flex-col items-center justify-center */}
       <div className="text-stone-400 text-3xl text-center">Withdraw ETH</div>
-      <div className="text-stone-500 text-xl text-center pt-4">Unstake and withdraw your ETH</div>
+      <div className="text-stone-500 text-xl text-center pt-2">Unstake and withdraw your ETH</div>
       <div className="grid gap-4 grid-cols-3 pt-4">
         {
           balanceByType.map(item => {
             return (
-              <div key={item.title} className="bg-white rounded-lg flex flex-col items-center gap-2 p-4">
+              <div key={item.title} className="bg-white rounded-lg flex flex-col items-center gap-2 p-2">
                 <h6 className="text-stone-900 text-sm">{item.title}</h6>
                 <p className="text-stone-900 text-sm">{item.balance} {item.type}</p>
               </div>
@@ -55,7 +55,7 @@ export default function Stake() {
       <div className="font-semibold text-2xl text-white mt-8">Unstake</div>
       <div className=" text-white w-full border border-stone-500 rounded-md  my-2 p-4">
         <Label htmlFor="amount" className="py-2">Amount to Stake</Label>
-        <InputGroup>
+        <InputGroup className="mb-4">
           <InputGroupInput  id="amount" placeholder="0.00" />
           <InputGroupAddon align="inline-end">
             <InputGroupText className="text-white">ETH</InputGroupText>
@@ -63,21 +63,23 @@ export default function Stake() {
         </InputGroup>
         {/* <div className="text-stone-400 text-sm py-2">Available: 0.6294 ETH</div> */}
 
-        {isConnected ? 
-          <Button variant="outline" size="lg" className="cursor-pointer">Unstake</Button> : 
-          <ConnectButton 
-            label="connect wallet"  // 自定义未连接时的按钮文字
-            chainStatus={{
-              smallScreen: "none",
-              largeScreen: "icon"
-            }}
-            showBalance={{
-              smallScreen: false, // 小屏幕隐藏余额
-              largeScreen: true   // 大屏幕显示余额
-            }}
-          />}
+        <div className="flex justify-center">
+          {isConnected ? 
+            <Button variant="outline" size="lg" className="cursor-pointer">Unstake</Button> : 
+            <ConnectButton 
+              label="connect wallet"  // 自定义未连接时的按钮文字
+              chainStatus={{
+                smallScreen: "none",
+                largeScreen: "icon"
+              }}
+              showBalance={{
+                smallScreen: false, // 小屏幕隐藏余额
+                largeScreen: true   // 大屏幕显示余额
+              }}
+            />}
+        </div>
       </div>
-      <div className="font-semibold text-2xl text-white mt-8">Withdraw</div>
+      <div className="font-semibold text-2xl text-white mt-6">Withdraw</div>
       <div className="flex justify-between items-center bg-white rounded-lg p-4 mt-2">
         <div>
           <p className="text-sm text-stone-700">Ready to Withdraw</p>
