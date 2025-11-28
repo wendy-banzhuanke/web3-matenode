@@ -1,7 +1,7 @@
 /*
  * @Author: zhangjian
  * @Date: 2025-11-27 15:56:45
- * @LastEditTime: 2025-11-27 16:01:18
+ * @LastEditTime: 2025-11-28 14:58:54
  * @LastEditors: zhangjian
  * @Description: providers提供器
  */
@@ -9,9 +9,8 @@
 
 import type React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { WagmiProvider } from 'wagmi';
+import { WagmiProvider} from 'wagmi';
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
-
 import { config } from '../wagmi/config';
 
 const queryClient = new QueryClient();
