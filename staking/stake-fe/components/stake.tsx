@@ -9,7 +9,6 @@
 import { useConnection, useBalance, useChainId } from "wagmi";
 import { type UseBalanceReturnType } from 'wagmi'
 import { formatUnits } from 'viem';
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import {
@@ -19,6 +18,8 @@ import {
   InputGroupText,
 } from "@/components/ui/input-group"
 import { Button } from "@/components/ui/button"
+import CustomConnectButton from '@/components/custome-connect-button';
+
 export default function Stake() {
     const chainId = useChainId();
     const { isConnected, address } = useConnection();
@@ -50,7 +51,7 @@ export default function Stake() {
         <div>
           {isConnected ? 
             <Button variant="outline" size="lg" className="cursor-pointer">Stake ETH</Button> : 
-            <ConnectButton label="connect wallet"/>}
+            <CustomConnectButton />}
         </div>
       </div>
     </div>

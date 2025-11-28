@@ -1,13 +1,12 @@
 /*
  * @Author: zhangjian
  * @Date: 2025-11-28 10:46:15
- * @LastEditTime: 2025-11-28 17:36:36
+ * @LastEditTime: 2025-11-28 17:41:13
  * @LastEditors: zhangjian
  * @Description: 质押组件
  */
 
 import { useConnection } from "wagmi";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import {
@@ -18,6 +17,8 @@ import {
   InputGroupTextarea,
 } from "@/components/ui/input-group"
 import { Button } from "@/components/ui/button"
+import CustomConnectButton from '@/components/custome-connect-button';
+
 export default function Stake() {
   const { isConnected } = useConnection();
 
@@ -36,8 +37,7 @@ export default function Stake() {
   }]
 
   return (
-    <div className="w-full p-4 pt-6">
-      {/* flex flex-col items-center justify-center */}
+    <div className="w-full p-8 pt-6">
       <div className="text-stone-400 text-3xl text-center">Withdraw ETH</div>
       <div className="text-stone-500 text-xl text-center pt-2">Unstake and withdraw your ETH</div>
       <div className="grid gap-4 grid-cols-3 pt-4">
@@ -65,18 +65,8 @@ export default function Stake() {
 
         <div className="flex justify-center">
           {isConnected ? 
-            <Button variant="outline" size="lg" className="cursor-pointer">Unstake</Button> : 
-            <ConnectButton 
-              label="connect wallet"  // 自定义未连接时的按钮文字
-              chainStatus={{
-                smallScreen: "none",
-                largeScreen: "icon"
-              }}
-              showBalance={{
-                smallScreen: false, // 小屏幕隐藏余额
-                largeScreen: true   // 大屏幕显示余额
-              }}
-            />}
+            <Button variant="outline" size="lg" className="cursor-pointer text-stone-950 bg-stone-400">Unstake</Button> : 
+            <CustomConnectButton />}
         </div>
       </div>
       <div className="font-semibold text-2xl text-white mt-6">Withdraw</div>
@@ -88,7 +78,7 @@ export default function Stake() {
         <div className="text-sm text-stone-400">20 min cooldown</div>
       </div>
      <div className="flex justify-center mt-4">
-       <Button variant="outline" size="lg" className="cursor-pointer">Withdraw ETH</Button>
+       <Button variant="outline" size="lg" className="cursor-pointer text-stone-950 bg-stone-400">Withdraw ETH</Button>
      </div>
     </div>
   )

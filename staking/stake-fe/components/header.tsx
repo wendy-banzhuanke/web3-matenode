@@ -1,26 +1,30 @@
 /*
  * @Author: zhangjian
  * @Date: 2025-11-27 16:42:37
- * @LastEditTime: 2025-11-28 15:48:30
+ * @LastEditTime: 2025-11-28 22:56:25
  * @LastEditors: zhangjian
  * @Description: header组件，用于连接钱包
  */
 "use client"
 
 import {useState} from 'react';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useConnection, useChainId } from 'wagmi'
+// import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useConnection, useChainId, useBalance } from 'wagmi'
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar"
 import Navigation from "@/components/navigation"
+import CustomConnectButton from '@/components/custome-connect-button';
 
 export default function Header({currentMenu, onMenuChange}: {currentMenu: number, onMenuChange: (index: number) => void}) {
 
   const { isConnected, address } = useConnection();
+  const { data } = useBalance({ address });
   const chainId = useChainId();
+
+  console.log("data===", data)
 
   const menuList = [{
     name: 'stake',
@@ -46,7 +50,9 @@ export default function Header({currentMenu, onMenuChange}: {currentMenu: number
         <Navigation menuList={menuList} currentMenu={currentMenu} onChange={onMenuChange}/>
       </div>
       <div>
-        <ConnectButton 
+        <CustomConnectButton />
+        
+        {/* <ConnectButton 
           label="connect wallet"  // 自定义未连接时的按钮文字
           chainStatus={{
             smallScreen: "none",
@@ -56,7 +62,7 @@ export default function Header({currentMenu, onMenuChange}: {currentMenu: number
             smallScreen: false, // 小屏幕隐藏余额
             largeScreen: true   // 大屏幕显示余额
           }}
-        />
+        /> */}
       </div>
     </div>
   )

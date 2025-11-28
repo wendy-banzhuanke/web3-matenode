@@ -6,7 +6,7 @@
  * @Description: 描述
  */
 
-import { getDefaultConfig, connectorsForWallets } from '@rainbow-me/rainbowkit';
+import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { 
   metaMaskWallet,
   injectedWallet,
@@ -66,41 +66,3 @@ export const config = getDefaultConfig({
   ],
   ssr: true,
 });
-
-
-// import { getDefaultConfig } from '@rainbow-me/rainbowkit';
-// import {
-//   // arbitrum,
-//   // base,
-//   mainnet,
-//   // optimism,
-//   // polygon,
-//   sepolia,
-// } from 'wagmi/chains';
-// import { metaMask } from 'wagmi/connectors'
-
-
-// export const PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_ID || '';
-
-// const defaultChain = 
-//   process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' 
-//     ? {
-//       ...sepolia,
-//       http: [process.env.NEXT_SEPOLIA_RPC_URL],
-//     } 
-//     : mainnet 
-
-// export const config = getDefaultConfig({
-//   appName: 'RainbowKit demo',
-//   projectId: PROJECT_ID,
-//   chains: [
-//     defaultChain
-//   ],
-//   wallets: [
-//     {
-//       groupName: 'Installed',
-//       wallets: [],
-//     },
-//   ],
-//   ssr: true,
-// });
