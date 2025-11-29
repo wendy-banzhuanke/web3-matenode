@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
 import '@rainbow-me/rainbowkit/styles.css';
+import { Toaster } from "@/components/ui/toaster";
+import { ToastStateProvider } from "@/hooks/use-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,7 +32,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
-          {children}
+          <ToastStateProvider>
+            {children}
+            <Toaster />
+          </ToastStateProvider>
         </Providers>
       </body>
     </html>

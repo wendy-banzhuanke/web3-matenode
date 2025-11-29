@@ -22,3 +22,5 @@
 .env
 .env.local
 .env*
+
+/ignition/deployments/

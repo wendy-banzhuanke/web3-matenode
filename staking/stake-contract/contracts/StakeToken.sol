@@ -17,7 +17,7 @@ import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol"; // P
  *   Pausable: 可暂停合约（避免紧急情况下的资金风险）。
  *   AccessControl: 权限控制（如管理员、升级权限）。
  */ 
-abstract contract StakeToken is Initializable, UUPSUpgradeable, PausableUpgradeable, AccessControlUpgradeable {
+contract StakeToken is Initializable, UUPSUpgradeable, PausableUpgradeable, AccessControlUpgradeable {
 
     /*
      * 为 ERC20 接口添加安全操作（如防重入的 safeTransfer），替换原生 transfer。
