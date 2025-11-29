@@ -1,3 +1,4 @@
+import { network } from "hardhat";
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import ERC20ParkTokenModule from "./ERC20ParkToken.sol";
 
@@ -26,7 +27,7 @@ export default buildModule("StakeTokenModule", (m) => {
     "0x0000000000000000000000000000000000000000", // ETH池地址必须为零
     1000n,                                        // 初始权重 (建议设为总权重的70%~80%)
     1n * 10n ** 16n,                              // 最小质押0.01 ETH (以wei为单位)
-    50n,                                         // 锁定约10分钟 (假设区块间隔12秒)
+    3n,                                         // 锁定约10分钟 (假设区块间隔12秒)
     false                                         // 不触发massUpdatePools
   ],{
     id: "initETHPool" // 唯一ID
@@ -36,11 +37,20 @@ export default buildModule("StakeTokenModule", (m) => {
     parkToken,       // Park代币地址
     200n,            // 权重
     1n * 10n ** 18n, // 最小质押1 PARK (假设精度18)
-    1800n,           // 锁定约6小时
+    5n,           // 锁定约6小时
     true             // 触发massUpdatePools更新奖励
   ], {
     id: "initParkPool" // 唯一ID 
   });
 
+  async function mineBlocks(blocks: number, interval: number) {
+    // Mine 1 block (default behavior)
+    const { networkHelpers } = await network.connect();
+    // Mine 10 blocks with an interval of 60 seconds between each block
+    await networkHelpers.mine(blocks, { interval });
+  }
+
+  mineBlocks(100, 3); // 挖 100 个块，间隔 3 秒
+  
   return { stakeToken };
 });
