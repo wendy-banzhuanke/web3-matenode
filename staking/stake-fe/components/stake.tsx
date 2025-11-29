@@ -13,7 +13,6 @@ import { formatUnits, formatEther, parseEther } from "viem";
 
 import stakingAbi from '@/abi/StakeToken.json';
 import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
 import {
   InputGroup,
   InputGroupAddon,
@@ -25,12 +24,11 @@ import CustomConnectButton from '@/components/custome-connect-button';
 import { useToast } from "@/hooks/use-toast";
 
 export default function Stake() {
-    const stakingAddress = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
-    // StakeTokenModule#StakeToken - 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
+    const stakingAddress = process.env.NEXT_PUBLIC_STAKING_CONTRACT_ADDRESS as `0x${string}`;
     const { toast } = useToast();
     const chainId = useChainId();
-    const { isConnected, address } = useConnection();
-    const result:UseBalanceReturnType = useBalance({ address, chainId })
+    const { isConnected, address: currentUserAddress } = useConnection();
+    const result:UseBalanceReturnType = useBalance({ address: currentUserAddress, chainId })
     const { data: poolData } = useReadContract({
       abi: stakingAbi.abi,
       address: stakingAddress,
@@ -42,8 +40,10 @@ export default function Stake() {
 
     const [inputStakeAmount, setInputStakeAmount] = useState("");
 
+    console.log("poolData==", poolData)
+    
     const onClickStakeButton = async () => {
-      if (!address) {
+      if (!stakingAddress) {
         toast({
           variant: "error",
           title: "error",
