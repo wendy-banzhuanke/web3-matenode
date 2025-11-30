@@ -1,12 +1,12 @@
 /*
  * @Author: zhangjian
  * @Date: 2025-11-28 10:46:15
- * @LastEditTime: 2025-11-28 17:14:20
+ * @LastEditTime: 2025-11-30 12:14:20
  * @LastEditors: zhangjian
  * @Description: 质押组件
  */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useConnection, useBalance, useChainId, useWriteContract, useWaitForTransactionReceipt, useReadContract } from "wagmi";
 import { type UseBalanceReturnType } from 'wagmi'
 import { formatUnits, formatEther, parseEther } from "viem";
@@ -22,96 +22,62 @@ import {
 import { Button } from "@/components/ui/button"
 import CustomConnectButton from '@/components/custome-connect-button';
 import { useToast } from "@/hooks/use-toast";
+import { useWriteTransaction } from "@/hooks/use-write-transaction";
 
 export default function Stake() {
-    const stakingAddress = process.env.NEXT_PUBLIC_STAKING_CONTRACT_ADDRESS as `0x${string}`;
-    const { toast } = useToast();
-    const chainId = useChainId();
-    const { isConnected, address: currentUserAddress } = useConnection();
-    const result:UseBalanceReturnType = useBalance({ address: currentUserAddress, chainId })
-    const { data: poolData } = useReadContract({
-      abi: stakingAbi.abi,
-      address: stakingAddress,
-      functionName: 'pool', // 读取pool结构体
-      args: [0],       // 池ID
-    })
-    const { writeContract, data: hash, isPending, error: submitError, } = useWriteContract()
-    const { status: txStatus, isLoading: isConfirming, isSuccess: isConfirmed, error: confirmError } = useWaitForTransactionReceipt({ hash })
+  const stakingAddress = process.env.NEXT_PUBLIC_STAKING_CONTRACT_ADDRESS as `0x${string}`;
+  const { toast } = useToast();
+  const chainId = useChainId();
+  const { isConnected, address: currentUserAddress } = useConnection();
+  const result:UseBalanceReturnType = useBalance({ address: currentUserAddress, chainId })
+  const { data: poolData } = useReadContract({
+    abi: stakingAbi.abi,
+    address: stakingAddress,
+    functionName: 'pool', // 读取pool结构体
+    args: [0],       // 池ID
+  })
+ 
+  const [inputStakeAmount, setInputStakeAmount] = useState("");
 
-    const [inputStakeAmount, setInputStakeAmount] = useState("");
+  const stake = useWriteTransaction({name: '质押 ETH'});
 
-    console.log("poolData==", poolData)
-    
-    const onClickStakeButton = async () => {
-      if (!stakingAddress) {
-        toast({
-          variant: "error",
-          title: "error",
-          description: "请连接钱包",
-        });
-
-        return;
-      };
-
-      if (!result.data || result.data.value === BigInt(0)) {
-        toast({
-          variant: "error",
-          title: "error",
-          description: "账户暂无可用余额 ETH",
-        });
-        return;
-      };
-
-      if(!inputStakeAmount || BigInt(inputStakeAmount) <= 0) {
-        toast({
-          variant: "error",
-          title: "error",
-          description: "请输入质押 ETH",
-        });
-        return;
-      }
-
-      console.log("result.data.value==", result.data.value)
-
-      // writeContract({
-      //   abi: stakingAbi.abi,
-      //   address: stakingAddress,
-      //   functionName: 'stake',
-      //   args: [BigInt(inputStakeAmount)],
-      // })
-      // 转换为wei（假设inputStakeAmount是以ETH为单位）
-      const amountInWei = parseEther(inputStakeAmount);
-      writeContract({
-        abi: stakingAbi.abi,
-        address: stakingAddress,
-        functionName: 'depositETH',
-        value: amountInWei,
-      });
-    }
-
-  // 根据状态更新UI
-  useEffect(() => {
-    if (txStatus === 'success') {
-      toast({
-        variant: "success",
-        title: "success",
-        description: "存款成功！",
-      });
-    }
-    console.log("txStatus==", txStatus)
-  }, [txStatus]);
-
-  // 根据状态更新UI
-  useEffect(() => {
-    if (submitError?.message) {
+  const onClickStakeButton = async () => {
+    if (!stakingAddress) {
       toast({
         variant: "error",
         title: "error",
-        description: submitError?.message,
+        description: "请连接钱包",
       });
+
+      return;
+    };
+
+    if (!result.data || result.data.value === BigInt(0)) {
+      toast({
+        variant: "error",
+        title: "error",
+        description: "账户暂无可用余额 ETH",
+      });
+      return;
+    };
+
+    if(!inputStakeAmount || BigInt(inputStakeAmount) <= 0) {
+      toast({
+        variant: "error",
+        title: "error",
+        description: "请输入质押 ETH",
+      });
+      return;
     }
-    console.log("submitError?.message==", submitError?.message)
-  }, [submitError?.message]);
+
+    const amountInWei = parseEther(inputStakeAmount);
+    stake.writeContract({
+      abi: stakingAbi.abi,
+      address: stakingAddress,
+      functionName: 'depositETH',
+      value: amountInWei,
+    });
+  }
 
   return (
     <div className="w-full p-8">
@@ -138,8 +104,8 @@ export default function Stake() {
         </div>
         <div>
           {isConnected ? 
-            <Button variant="outline" size="lg" className="cursor-pointer" onClick={onClickStakeButton} disabled={isPending || isConfirming}>
-              {isPending ? '等待钱包确认...' : isConfirming ? '交易确认中...' : 'Stake ETH'}
+            <Button variant="outline" size="lg" className="cursor-pointer" onClick={onClickStakeButton} disabled={stake.isPending || stake.isConfirming}>
+              {stake.isPending ? '等待钱包确认...' : stake.isConfirming ? '交易确认中...' : 'Stake ETH'}
             </Button> : 
             <CustomConnectButton />}
         </div>

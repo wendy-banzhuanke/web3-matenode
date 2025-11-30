@@ -1,11 +1,11 @@
 /*
  * @Author: zhangjian
  * @Date: 2025-11-28 10:46:15
- * @LastEditTime: 2025-11-28 17:41:13
+ * @LastEditTime: 2025-11-30 10:41:13
  * @LastEditors: zhangjian
  * @Description: 质押组件
  */
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useConnection, useWriteContract, useWaitForTransactionReceipt, useReadContract, useReadContracts, useBlockNumber } from "wagmi";
 import { formatUnits, formatEther, parseEther } from "viem";
 import stakingAbi from "@/abi/StakeToken.json";
@@ -20,21 +20,21 @@ import {
 import { Button } from "@/components/ui/button"
 import CustomConnectButton from '@/components/custome-connect-button';
 import { useToast } from "@/hooks/use-toast";
+import { useWriteTransaction } from "@/hooks/use-write-transaction";
 
 export default function Stake() {
   const stakingAddress = process.env.NEXT_PUBLIC_STAKING_CONTRACT_ADDRESS as `0x${string}`;
   const { toast } = useToast();
-   const { data: blockNumber } = useBlockNumber({ watch: true });
+  const { data: blockNumber } = useBlockNumber({ watch: true });
   const { isConnected, address: currentUserAddress } = useConnection();
-  const { data:hash, writeContract, isPending, error: submitError} = useWriteContract();
-  const { status: txStatus, isLoading: isConfirming, isSuccess: isConfirmed, error: confirmError } = useWaitForTransactionReceipt({ hash })
-
+  
   const wagmigotchiContract = {
     address: stakingAddress,
     abi: stakingAbi.abi,
   } as const
   
-  const { data: userStakingBalance, isLoading } = useReadContracts({
+  const { data: userStakingBalance, isLoading } = useReadContracts(
+    {
       contracts: [
         {
           ...wagmigotchiContract,
@@ -55,7 +55,8 @@ export default function Stake() {
     }
   );
 
-  console.log("userStakingBalance===", userStakingBalance, userStakingBalance?.[2]?.result?.toString(), blockNumber)
+  const unstake = useWriteTransaction({name: '解质押 ETH'});
+  const withdraw = useWriteTransaction({name: '提现 ETH'});
 
   const balanceByType = [{
     type: "ETH",
@@ -77,12 +78,13 @@ export default function Stake() {
     if (!isConnected || !currentUserAddress) {
       toast({
         title: "Error",
-        description: "Please connect your wallet first",
+        description: "请连接钱包",
         variant: "error",
       });
       return;
     }
-    writeContract({
+
+    unstake.writeContract({
       ...wagmigotchiContract,
       functionName: 'unstake',
       args: [0, parseEther(inputUnstakeAmount)],
@@ -93,7 +95,7 @@ export default function Stake() {
     if (!isConnected || !currentUserAddress) {
       toast({
         title: "Error",
-        description: "Please connect your wallet first",
+        description: "请连接钱包",
         variant: "error",
       });
       return;
@@ -102,7 +104,7 @@ export default function Stake() {
     if (userStakingBalance?.[0]?.result?.toString() === '0') {
       toast({
         title: "Error",
-        description: "You have not staked any ETH",
+        description: "您没有质押任何 ETH",
         variant: "error",
       });
       return;
@@ -110,29 +112,18 @@ export default function Stake() {
     if (userStakingBalance?.[1]?.result?.[1]?.toString() === '0') {
       toast({
         title: "Error",
-        description: "You have pending withdraw amount, please wait 20 min cooldown",
+        description: "您有未提现的 ETH，请等待约 20 分钟后再体现",
         variant: "error",
       });
       return;
     }
 
-    writeContract({
+    withdraw.writeContract({
       ...wagmigotchiContract,
       functionName: 'withdraw',
       args: [0],
     })
   }
-
-  // 根据状态更新UI
-  useEffect(() => {
-    if (txStatus === 'success') {
-      toast({
-        variant: "success",
-        title: "success",
-        description: "解质押成功！",
-      });
-    }
-  }, [txStatus]);
 
   return (
     <div className="w-full p-8 pt-6">
@@ -161,8 +152,8 @@ export default function Stake() {
         </InputGroup>
         <div className="flex justify-center">
           {isConnected ? 
-            <Button variant="outline" size="lg" className="cursor-pointer text-stone-950 bg-stone-400" disabled={isPending || isConfirming}  onClick={onClickUnstakeButton}>
-              {isPending ? '等待钱包确认...' : isConfirming ? '交易确认中...' : 'Unstake'}
+            <Button variant="outline" size="lg" className="cursor-pointer text-stone-950 bg-stone-400" disabled={unstake.isPending || unstake.isConfirming}  onClick={onClickUnstakeButton}>
+              {unstake.isPending ? '等待钱包确认...' : unstake.isConfirming ? '交易确认中...' : 'Unstake'}
             </Button> : 
             <CustomConnectButton />}
         </div>
@@ -176,8 +167,8 @@ export default function Stake() {
         <div className="text-sm text-stone-400">20 min cooldown</div>
       </div>
       <div className="flex justify-center mt-4">
-        <Button variant="outline" size="lg" className="cursor-pointer text-stone-950 bg-stone-400" disabled={isPending || isConfirming} onClick={onClickWithdrawButton}>
-          {isPending ? '等待钱包确认...' : isConfirming ? '交易确认中...' : 'Withdraw ETH'}
+        <Button variant="outline" size="lg" className="cursor-pointer text-stone-950 bg-stone-400" disabled={withdraw.isPending || withdraw.isConfirming} onClick={onClickWithdrawButton}>
+          {withdraw.isPending ? '等待钱包确认...' : withdraw.isConfirming ? '交易确认中...' : 'Withdraw ETH'}
         </Button>
      </div>
     </div>
