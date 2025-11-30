@@ -26,11 +26,53 @@ import type { Chain } from 'wagmi/chains';
 
 export const PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_ID || '';
 
-const getDefaultChain = (): Chain => {
-  const isLocalhost = process.env.NEXT_PUBLIC_ENABLE_LOCALHOST === 'true';
-  const isTestnet = process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true';
+// const getDefaultChain = (): Chain => {
+//   const isLocalhost = process.env.NEXT_PUBLIC_ENABLE_LOCALHOST === 'true';
+//   const isTestnet = process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true';
   
-  return isLocalhost ? {
+//   return isLocalhost ? {
+//       ...localhost,
+//       id: 31337, // Hardhat 默认链 ID
+//       name: "Localhost",
+//       nativeCurrency: {
+//         decimals: 18,
+//         name: "Ether",
+//         symbol: "ETH",
+//       },
+//       rpcUrls: {
+//         default: { 
+//           http: ["http://localhost:8545"] 
+//         },
+//         public: { 
+//           http: ["http://localhost:8545"] 
+//         },
+//       },
+//       testnet: true // 标记为测试网
+//     } : isTestnet 
+//     ? {
+//         ...sepolia,
+//         rpcUrls: {
+//           default: { 
+//             http: [process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL || sepolia.rpcUrls.default.http[0]] 
+//           }
+//         }
+//       }
+//     : mainnet;
+// };
+
+export const config = getDefaultConfig({
+  appName: 'RainbowKit Demo',
+  projectId: PROJECT_ID,
+  // chains: [getDefaultChain()],
+  chains: [{
+      ...sepolia,
+      rpcUrls: {
+        default: { 
+          http: [process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL || sepolia.rpcUrls.default.http[0]] 
+        }
+      },
+      pollingInterval: 4000, // 每 4 秒检查新区块
+    }, {
       ...localhost,
       id: 31337, // Hardhat 默认链 ID
       name: "Localhost",
@@ -48,22 +90,10 @@ const getDefaultChain = (): Chain => {
         },
       },
       testnet: true // 标记为测试网
-    } : isTestnet 
-    ? {
-        ...sepolia,
-        rpcUrls: {
-          default: { 
-            http: [process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL || sepolia.rpcUrls.default.http[0]] 
-          }
-        }
-      }
-    : mainnet;
-};
-
-export const config = getDefaultConfig({
-  appName: 'RainbowKit Demo',
-  projectId: PROJECT_ID,
-  chains: [getDefaultChain()],
+    }, {
+      ...mainnet
+    }
+  ],
   wallets: [
     {
       groupName: 'Installed',

@@ -5,8 +5,8 @@
  * @LastEditors: zhangjian
  * @Description: 质押组件
  */
-import { useState } from "react";
-import { useConnection, useWriteContract, useWaitForTransactionReceipt, useReadContract, useReadContracts, useBlockNumber } from "wagmi";
+import { useState, useEffect } from "react";
+import { useConnection, useBalance, useReadContracts, useBlockNumber, useChainId } from "wagmi";
 import { formatUnits, formatEther, parseEther } from "viem";
 import stakingAbi from "@/abi/StakeToken.json";
 import { Label } from "@/components/ui/label"
@@ -25,15 +25,21 @@ import { useWriteTransaction } from "@/hooks/use-write-transaction";
 export default function Stake() {
   const stakingAddress = process.env.NEXT_PUBLIC_STAKING_CONTRACT_ADDRESS as `0x${string}`;
   const { toast } = useToast();
-  const { data: blockNumber } = useBlockNumber({ watch: true });
+  const chainId = useChainId();
   const { isConnected, address: currentUserAddress } = useConnection();
+  const { refetch: refetchBalance } = useBalance({ address: currentUserAddress, chainId });
+  const { data: blockNumber } = useBlockNumber({ watch: true });
   
+  
+  const unstake = useWriteTransaction({name: '解质押 ETH'});
+  const withdraw = useWriteTransaction({name: '提现 ETH'});
+
   const wagmigotchiContract = {
     address: stakingAddress,
     abi: stakingAbi.abi,
   } as const
   
-  const { data: userStakingBalance, isLoading } = useReadContracts(
+  const { data: userStakingBalance, isLoading, refetch } = useReadContracts(
     {
       contracts: [
         {
@@ -52,11 +58,11 @@ export default function Stake() {
           args: [0, currentUserAddress],  
         }
       ],
+      query: {
+        enabled: !!blockNumber, // 绑定区块监听
+      },
     }
   );
-
-  const unstake = useWriteTransaction({name: '解质押 ETH'});
-  const withdraw = useWriteTransaction({name: '提现 ETH'});
 
   const balanceByType = [{
     type: "ETH",
@@ -88,7 +94,15 @@ export default function Stake() {
       ...wagmigotchiContract,
       functionName: 'unstake',
       args: [0, parseEther(inputUnstakeAmount)],
-    })
+    }, {
+      // onSuccess: (hash) => {
+      //   refetch() 
+      // },
+      onError: (error) => {
+        console.error('提交错误:', error.message)
+        unstake.reset()
+      },
+    },)
   }
 
   const onClickWithdrawButton = () => {
@@ -124,6 +138,18 @@ export default function Stake() {
       args: [0],
     })
   }
+
+  useEffect(() => {
+    if (unstake.isConfirmed) {
+      refetch()
+    }
+  }, [unstake.isConfirmed, refetch])
+  useEffect(() => {
+    if (withdraw.isConfirmed) {
+      refetch()
+      refetchBalance()
+    }
+  }, [withdraw.isConfirmed, refetch, refetchBalance])
 
   return (
     <div className="w-full p-8 pt-6">

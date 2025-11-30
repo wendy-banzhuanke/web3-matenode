@@ -14,7 +14,8 @@ export function useWriteTransaction({ name }: { name: string }) {
     data:hash, 
     writeContract, 
     isPending, 
-    error: submitError
+    error: submitError,
+    reset
   } = useWriteContract();
   const { 
     status: txStatus, 
@@ -51,6 +52,7 @@ export function useWriteTransaction({ name }: { name: string }) {
     isConfirming,
     isConfirmed,
     confirmError,
+    reset,
     transaction: {
       hash,
       name,

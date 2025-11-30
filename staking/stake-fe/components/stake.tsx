@@ -6,8 +6,8 @@
  * @Description: 质押组件
  */
 
-import { useState } from "react";
-import { useConnection, useBalance, useChainId, useWriteContract, useWaitForTransactionReceipt, useReadContract } from "wagmi";
+import { useState, useEffect } from "react";
+import { useConnection, useBalance, useChainId, useBlockNumber, useReadContract } from "wagmi";
 import { type UseBalanceReturnType } from 'wagmi'
 import { formatUnits, formatEther, parseEther } from "viem";
 
@@ -28,19 +28,23 @@ export default function Stake() {
   const stakingAddress = process.env.NEXT_PUBLIC_STAKING_CONTRACT_ADDRESS as `0x${string}`;
   const { toast } = useToast();
   const chainId = useChainId();
+  const { data: blockNumber } = useBlockNumber({ watch: true });
   const { isConnected, address: currentUserAddress } = useConnection();
-  const result:UseBalanceReturnType = useBalance({ address: currentUserAddress, chainId })
-  const { data: poolData } = useReadContract({
+  const { data: userBalance, refetch: refetchBalance, isLoading: userBalanceLoading } = useBalance({ address: currentUserAddress, chainId });
+  const [inputStakeAmount, setInputStakeAmount] = useState("");
+
+  const stake = useWriteTransaction({name: '质押 ETH'});
+  
+  const { data: poolData, refetch } = useReadContract({
     abi: stakingAbi.abi,
     address: stakingAddress,
     functionName: 'pool', // 读取pool结构体
     args: [0],       // 池ID
+    query: {
+      enabled: !!blockNumber, // 绑定区块监听
+    },
   })
- 
-  const [inputStakeAmount, setInputStakeAmount] = useState("");
-
-  const stake = useWriteTransaction({name: '质押 ETH'});
-
+  
   const onClickStakeButton = async () => {
     if (!stakingAddress) {
       toast({
@@ -48,11 +52,10 @@ export default function Stake() {
         title: "error",
         description: "请连接钱包",
       });
-
       return;
     };
 
-    if (!result.data || result.data.value === BigInt(0)) {
+    if (!userBalance || userBalance.value === BigInt(0)) {
       toast({
         variant: "error",
         title: "error",
@@ -61,7 +64,7 @@ export default function Stake() {
       return;
     };
 
-    if(!inputStakeAmount || BigInt(inputStakeAmount) <= 0) {
+    if(!inputStakeAmount || BigInt(parseEther(inputStakeAmount)) <= 0) {
       toast({
         variant: "error",
         title: "error",
@@ -76,8 +79,20 @@ export default function Stake() {
       address: stakingAddress,
       functionName: 'depositETH',
       value: amountInWei,
+    }, {
+      onError: (error) => {
+        console.error('提交错误:', error.message)
+        stake.reset()
+      },
     });
   }
+
+  useEffect(() => {
+    if (stake.isConfirmed) {
+      refetch()
+      refetchBalance()
+    }
+  }, [stake.isConfirmed, refetch, refetchBalance])
 
   return (
     <div className="w-full p-8">
@@ -94,11 +109,11 @@ export default function Stake() {
               <InputGroupText className="text-white">ETH</InputGroupText>
             </InputGroupAddon>
           </InputGroup>
-          {result.data ? (
+          {userBalance ? (
             <p className="text-stone-400 text-sm py-2">
-              Available: {Number(formatUnits(result.data.value, result.data.decimals)).toFixed(4)} {result.data.symbol}
+              Available: {Number(formatUnits(userBalance.value, userBalance.decimals)).toFixed(4)} {userBalance.symbol}
             </p>
-          ) : result.isLoading ? (
+          ) : userBalanceLoading ? (
             <p className="text-stone-400 text-sm py-2">Loading balance...</p>
           ) : null}
         </div>
