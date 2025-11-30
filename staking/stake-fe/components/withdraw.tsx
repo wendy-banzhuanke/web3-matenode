@@ -89,6 +89,40 @@ export default function Stake() {
     })
   }
 
+  const onClickWithdrawButton = () => {
+    if (!isConnected || !currentUserAddress) {
+      toast({
+        title: "Error",
+        description: "Please connect your wallet first",
+        variant: "error",
+      });
+      return;
+    }
+
+    if (userStakingBalance?.[0]?.result?.toString() === '0') {
+      toast({
+        title: "Error",
+        description: "You have not staked any ETH",
+        variant: "error",
+      });
+      return;
+    }
+    if (userStakingBalance?.[1]?.result?.[1]?.toString() === '0') {
+      toast({
+        title: "Error",
+        description: "You have pending withdraw amount, please wait 20 min cooldown",
+        variant: "error",
+      });
+      return;
+    }
+
+    writeContract({
+      ...wagmigotchiContract,
+      functionName: 'withdraw',
+      args: [0],
+    })
+  }
+
   // 根据状态更新UI
   useEffect(() => {
     if (txStatus === 'success') {
@@ -141,8 +175,10 @@ export default function Stake() {
         </div>
         <div className="text-sm text-stone-400">20 min cooldown</div>
       </div>
-     <div className="flex justify-center mt-4">
-       <Button variant="outline" size="lg" className="cursor-pointer text-stone-950 bg-stone-400">Withdraw ETH</Button>
+      <div className="flex justify-center mt-4">
+        <Button variant="outline" size="lg" className="cursor-pointer text-stone-950 bg-stone-400" disabled={isPending || isConfirming} onClick={onClickWithdrawButton}>
+          {isPending ? '等待钱包确认...' : isConfirming ? '交易确认中...' : 'Withdraw ETH'}
+        </Button>
      </div>
     </div>
   )
