@@ -13,8 +13,10 @@ export default function WalletConnectKitProvider({
 }: {
   children: React.ReactNode
 }) {
-  return <WalletConnectKitContext.Provider value="dark">
-            {children}
-            {/* TODO <WalletConnectModal /> */}
-        </WalletConnectKitContext.Provider>
+  return (
+    <WalletConnectKitContext.Provider value="dark">
+      {children}
+      {/* TODO <WalletConnectModal /> */}
+    </WalletConnectKitContext.Provider>
+  )
 }
