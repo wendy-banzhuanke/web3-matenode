@@ -8,3 +8,9 @@ export interface Chain {
     },
     rpcUrl: string,
 }
+
+export interface Connector {
+    id: string
+    name: string
+    type: string
+}
