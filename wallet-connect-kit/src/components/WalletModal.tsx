@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react'
 import { SUPPORTED_WALLETS } from '../constants/wallets'
 import { useWallet } from '../hooks/useWallet'
 
-
-
 interface WalletGroup {
   installed: Wallet[]
   popular: Wallet[]
@@ -18,6 +16,7 @@ export function WalletModal({ onClose }: { onClose: () => void }) {
     popular: []
   })
 
+
   // 检测已安装的钱包
   useEffect(() => {
     const installedWallets = Object.values(SUPPORTED_WALLETS).filter(wallet => {
@@ -26,9 +25,11 @@ export function WalletModal({ onClose }: { onClose: () => void }) {
         case 'metamask':
           return !!window.ethereum?.isMetaMask
         case 'coinbase':
-          return !!window.ethereum?.isCoinbaseWallet
+          return !!window.coinbaseWalletExtension?.isCoinbaseWallet
         case 'okx':
-          return !!window.ethereum?.isOkxWallet
+          return !!window.okxwallet?.isOkxWallet
+        case 'phantom':
+          return !!window.ethereum?.isPhantom
         default:
           return false
       }
@@ -46,16 +47,16 @@ export function WalletModal({ onClose }: { onClose: () => void }) {
   }, [])
 
   return (
-    <div className="wallet-modal-overlay">
-      <div className="wallet-modal">
-        <button className="close-button" onClick={onClose}>
+    <div className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center">
+      <div className="bg-black bg-opacity-50 w-[500px] h-[500px] rounded-lg p-8 relative">
+        <button className="close-button absolute top-4 right-4 text-2xl" onClick={onClose}>
           ×
         </button>
 
         {/* 已安装的钱包 */}
         {walletGroups.installed.length > 0 && (
-          <div className="wallet-group">
-            <h4>Installed Wallets</h4>
+          <div className="text-white">
+            <h4 className='text-2xl font-bold mb-4 text-[#46ff65]'>Installed Wallets</h4>
             <div className="wallet-list">
               {walletGroups.installed.map(wallet => (
                 <WalletItem 
@@ -74,7 +75,7 @@ export function WalletModal({ onClose }: { onClose: () => void }) {
         {/* 主流钱包 */}
         {walletGroups.popular.length > 0 && (
           <div className="wallet-group">
-            <h4>Popular Wallets</h4>
+            <h4 className='text-2xl font-bold mb-4 text-[#7700f5]'>Popular Wallets</h4>
             <div className="wallet-list">
               {walletGroups.popular.map(wallet => (
                 <WalletItem
@@ -106,9 +107,9 @@ function WalletItem({
   isInstallable?: boolean
 }) {
   return (
-    <div className="wallet-item" onClick={onClick}>
-      <img src={wallet.icon} alt={wallet.name} width={32} />
-      <span>{wallet.name}</span>
+    <div className="flex items-center justify-between p-4 border border-[#1165f5] rounded-md mb-4" onClick={onClick}>
+      <img src={wallet.icon} alt={wallet.name} className='w-8 h-8 mr-2' />
+      <span className='text-white font-bold text-lg'>{wallet.name}</span>
       {isInstallable && <span className="install-badge">Install</span>}
     </div>
   )

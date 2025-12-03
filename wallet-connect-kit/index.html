@@ -5,6 +5,12 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>wallet-connect-kit</title>
+    <script>
+      // 1️⃣ **尽早执行（在页面加载前）**：备份原始 MetaMask
+      if (window.ethereum?.isMetaMask && !window.__originalEthereum) {
+        window.__originalEthereum = window.ethereum;
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

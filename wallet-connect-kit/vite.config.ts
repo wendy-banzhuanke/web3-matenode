@@ -1,7 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import dts from 'vite-plugin-dts'
+
+// import dts from 'vite-plugin-dts'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -12,7 +13,6 @@ export default defineConfig({
       },
     }),
     tailwindcss(),
-    dts({insertTypesEntry: true}),
   ],
   build: {
     lib: {
@@ -31,3 +31,15 @@ export default defineConfig({
     }
   }
 })
+
+// package.json
+// "main": "./dist/wallet-connect-kit.umd.js",
+  // "module": "./dist/wallet-connect-kit.es.js",
+  // "types": "./dist/index.d.ts",
+
+
+  
+  // "peerDependencies": {
+  //   "react": "^19.2.0",
+  //   "react-dom": "^19.2.0"
+  // }
