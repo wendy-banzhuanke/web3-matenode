@@ -10,6 +10,8 @@ export function useWallet() {
 
   return {
     account: context.account,
+    amount: context.amount,
+    symbol: context.symbol,
     chainId: context.chainId,
     isConnected: context.isConnected,
     connectWallet: context.connectWallet,

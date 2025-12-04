@@ -20,7 +20,6 @@ export function WalletModal({ onClose }: { onClose: () => void }) {
   // 检测已安装的钱包
   useEffect(() => {
     const installedWallets = Object.values(SUPPORTED_WALLETS).filter(wallet => {
-      // MetaMask/Coinbase/OKX的检测方式不同
       switch(wallet.id) {
         case 'metamask':
           return !!window.ethereum?.isMetaMask

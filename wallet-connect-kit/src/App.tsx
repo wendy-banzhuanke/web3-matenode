@@ -33,7 +33,8 @@ function WalletDashboard() {
       <div className='text-2xl font-bold text-red-500'>这是一个钱包页面吗？</div>
       <p>当前连接的钱包地址：{account}</p>
       <p>当前连接的链ID：{chainId}</p>
-      <button onClick={disconnectWallet}>断开连接</button>
+      {/* <button onClick={disconnectWallet}>断开连接</button> */}
+      <ConnectButton />
     </>
   )
 }
