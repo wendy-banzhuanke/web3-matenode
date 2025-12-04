@@ -42,7 +42,7 @@ export default function WalletConnectKitProvider({
     }
   }
 
-  const connectWallet = async (walletType: WalletType) => {
+  const connectWallet = async (walletType: string) => {
     const wallet = SUPPORTED_WALLETS[walletType.toUpperCase() as WalletType]
 
     if (!wallet.detector()) {
@@ -81,6 +81,7 @@ export default function WalletConnectKitProvider({
         symbol: getNativeCurrencySymbol(chainId),
         chainId,
         isConnected: true,
+        type: walletType,
       })
     } catch (error) {
       // TODO 提示用户连接钱包失败
@@ -89,9 +90,37 @@ export default function WalletConnectKitProvider({
   }
 
   const disconnectWallet = async () => {
-    console.log("walletState.provider===", walletState.provider)
     if (!walletState.provider) return
-    await walletState.provider!.request({ method: 'wallet_revokePermissions', params: [{ eth_accounts: {} }]});
+
+    const _type = walletState.type
+
+    // if (window.ethereum?._handleDisconnect) {
+    //   await window.ethereum._handleDisconnect();
+    // }
+
+    if (_type === 'metamask') {
+      await walletState.provider!.request({ method: 'wallet_revokePermissions', params: [{ eth_accounts: {} }]});
+    } else if (_type === 'coinbase') {
+
+      if (walletState.provider && !walletState.provider.disconnect) {
+        walletState.provider.disconnect = async () => {
+          await walletState.provider!.request({
+            method: 'wallet_requestDisconnect'
+          });
+          
+          window.dispatchEvent(new Event('coinbaseWallet_disconnect'));
+        }
+      } 
+
+      await walletState.provider.disconnect()
+
+      // if (walletState.provider._relay) {
+      //   walletState.provider._relay.resetAndUnload();
+      // }
+
+    } else if (_type === 'okx') {
+      await walletState.provider.disconnect()
+    }
 
     setWalletState({
       provider: null,

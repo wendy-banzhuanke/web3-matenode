@@ -11,6 +11,7 @@ export interface WalletState {
     symbol?: string | null,
     chainId?: number | null,
     isConnected?: boolean,
+    type?: string | null,
 }
 
 export interface WalletContextType extends WalletState {
@@ -27,5 +28,6 @@ export const WalletContext = createContext<WalletContextType>({
     isConnected: false,
     connectWallet: () => Promise.resolve(),
     disconnectWallet: () => {},
+    type: null,
 })
 
