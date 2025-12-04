@@ -28,7 +28,7 @@ export function WalletModal({ onClose }: { onClose: () => void }) {
         case 'okx':
           return !!window.okxwallet?.isOkxWallet
         case 'phantom':
-          return !!window.ethereum?.isPhantom
+          return !!window.phantom?.ethereum?.isPhantom
         default:
           return false
       }
@@ -109,7 +109,7 @@ function WalletItem({
     <div className="flex items-center justify-between p-4 border border-[#1165f5] rounded-md mb-4" onClick={onClick}>
       <img src={wallet.icon} alt={wallet.name} className='w-8 h-8 mr-2' />
       <span className='text-white font-bold text-lg'>{wallet.name}</span>
-      {isInstallable && <span className="install-badge">Install</span>}
+      {isInstallable && <span className="install-badge text-amber-500 font-bold cursor-pointer hover:text-amber-300">Install</span>}
     </div>
   )
 }
