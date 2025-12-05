@@ -31,7 +31,7 @@ export const SUPPORTED_WALLETS = {
     id: 'phantom',
     name: 'Phantom Wallet',
     icon: none,
-    detector: () => !!window.phantom?.isPhantom || !!window.ethereum?.isPhantom,
+    detector: () => !!window.phantom?.ethereum?.isPhantom,
     installLink: 'https://phantom.app/'
   },
 } as const

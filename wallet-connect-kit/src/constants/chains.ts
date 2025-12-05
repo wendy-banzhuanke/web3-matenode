@@ -1,18 +1,21 @@
 export const SUPPORTED_CHAINS = {
   LOCALHOST: {
-    id: '0x7A69',
+    id: 31337,
     name: 'Localhost',
-    rpcUrl: 'http://localhost:8545'
+    rpcUrl: 'http://localhost:8545',
+    isTestnet: true
   },
   SEPOLIA: {
-    id: '0xaa36a7',
+    id: 11155111,
     name: 'Sepolia',
-    rpcUrl: 'https://rpc.sepolia.org'
+    rpcUrl: 'https://rpc.sepolia.org',
+    isTestnet: true
   },
   MAINNET: {
-    id: '0x1',
+    id: 1,
     name: 'Ethereum',
-    rpcUrl: 'https://mainnet.infura.io/v3/YOUR_KEY'
+    rpcUrl: 'https://mainnet.infura.io/v3/YOUR_KEY',
+    isTestnet: false
   }
 }
 

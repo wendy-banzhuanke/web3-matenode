@@ -2,14 +2,12 @@ import { createContext } from 'react'
 import type { WalletType } from '../constants/wallets'
 import type { EthereumProvider } from '../type/ethereum'
 
-
-
 export interface WalletState {
     provider?: null | EthereumProvider,
     account?: string | null,
-    amount?: string | bigint | number | null,
+    amount?: string | number | null,
     symbol?: string | null,
-    chainId?: number | null,
+    chainId?: number | string | bigint | null,
     isConnected?: boolean,
     type?: string | null,
 }

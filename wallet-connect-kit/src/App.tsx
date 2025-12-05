@@ -3,7 +3,6 @@ import WalletConnectKitProvider from './provider/WalletConnectProvider'
 import { useWallet } from './hooks/useWallet'
 import './App.css'
 import { ConnectButton } from './components/ConnectButton'
-import { ChainModal } from './components/ChainModal'
 
 function App() {
   // const [count, setCount] = useState(0)
@@ -18,16 +17,13 @@ function App() {
 
 
 function WalletDashboard() {
-  const { account, chainId, isConnected, connectWallet, disconnectWallet } = useWallet()
+  const { account, chainId, isConnected } = useWallet()
 
   if(!isConnected){
     return (
       <>
         <ConnectButton />
         {/* <div className='text-2xl font-bold text-red-500' onClick={connectWallet}>请先连接钱包</div> */}
-        <div>
-          <ChainModal onClose={() => {}}/>
-        </div>
       </>
     )
   }

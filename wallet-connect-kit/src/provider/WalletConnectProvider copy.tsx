@@ -110,24 +110,204 @@ export default function WalletConnectKitProvider({
     }
   };
 
-  // 监听账户变化
   useEffect(() => {
     const provider = walletState.provider || window.ethereum;
     if (!provider) return;
 
-    const handleAccountsChanged = (accounts: string[]) => {
-      console.log("切换到新账户:", accounts[0]);
-      
-      setWalletState(prev => ({
-        ...prev,
-        account: accounts[0] || null,
-        isConnected: accounts.length > 0,
-      }));
+    let unsubscribe: (() => void) | null = null;
+    let balanceCheckInterval: number | null = null;
+
+    // 启动余额监控
+    const startBalanceMonitoring = () => {
+      // 先清除之前的监听
+      stopBalanceMonitoring();
+
+      if (!walletState.account) return;
+
+      console.log('开始监控余额变化，当前账户:', walletState.account);
+
+      // 方案A：优先尝试 eth_subscribe（更高效）
+      const tryEthSubscribe = () => {
+        provider.request({
+          method: 'eth_subscribe',
+          params: ['newHeads']
+        }).then(subId => {
+          console.log('已启用链上订阅模式');
+
+          const subscriptionHandler = async () => {
+            try {
+              const balance = await provider.request({
+                method: "eth_getBalance",
+                params: [walletState.account, "latest"]
+              });
+              console.log('最新余额:', balance);
+              // 这里可以添加余额状态更新逻辑
+              setWalletState(prev => ({
+                ...prev,
+                balance: balance.toString()
+              }));
+            } catch (error) {
+              console.error('获取余额出错:', error);
+            }
+          };
+
+          // 监听订阅事件
+          provider.on(subId, subscriptionHandler);
+
+          // 设置取消订阅的函数
+          unsubscribe = () => {
+            console.log('取消链上订阅');
+            provider.removeListener(subId, subscriptionHandler);
+            provider.request({
+              method: 'eth_unsubscribe',
+              params: [subId]
+            }).catch(console.error);
+          };
+        }).catch((err) => {
+          console.log('链上订阅失败，尝试区块事件监听', err);
+          tryBlockListener();
+        });
+      };
+
+      // 方案B：次选区块事件监听
+      const tryBlockListener = () => {
+        if (typeof provider.on === 'function') {
+          console.log('尝试使用区块事件监听');
+
+          const blockHandler = async () => {
+            try {
+              const balance = await provider.request({
+                method: "eth_getBalance",
+                params: [walletState.account, "latest"]
+              });
+              console.log('新区块到达，最新余额:', balance);
+              setWalletState(prev => ({
+                ...prev,
+                balance: balance.toString()
+              }));
+            } catch (error) {
+              console.error('获取余额出错:', error);
+            }
+          };
+
+          provider.on('block', blockHandler);
+          unsubscribe = () => {
+            console.log('移除区块监听');
+            provider.removeListener('block', blockHandler);
+          };
+        } else {
+          console.log('提供者不支持事件监听，降级到轮询');
+          startPolling();
+        }
+      };
+
+      // 方案C：降级到轮询
+      const startPolling = () => {
+        console.log('启动轮询模式，间隔5秒');
+        
+        const pollBalance = async () => {
+          try {
+            const balance = await provider.request({
+              method: "eth_getBalance",
+              params: [walletState.account, "latest"]
+            });
+            console.log('轮询获取余额:', balance);
+            setWalletState(prev => ({
+              ...prev,
+              balance: balance.toString()
+            }));
+          } catch (error) {
+            console.error('轮询获取余额出错:', error);
+          }
+        };
+
+        // 立即执行一次
+        pollBalance();
+        
+        // 设置定时轮询
+        balanceCheckInterval = setInterval(pollBalance, 5000);
+        unsubscribe = () => {
+          console.log('清除轮询');
+          if (balanceCheckInterval) clearInterval(balanceCheckInterval);
+        };
+      };
+
+      // 开始尝试不同方案
+      tryEthSubscribe();
     };
 
+    // 停止余额监控
+    const stopBalanceMonitoring = () => {
+      if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+      }
+      if (balanceCheckInterval) {
+  clearInterval(balanceCheckInterval);
+        balanceCheckInterval = null;
+      }
+    };
+
+    const handleAccountsChanged = (accounts: string[]) => {
+      console.log("账户变化:", accounts);
+      
+      const newAccount = accounts[0] || null;
+      
+      // 只有当账户确实变化时才更新状态和重新监听
+      if (newAccount !== walletState.account) {
+        setWalletState(prev => ({
+          ...prev,
+          account: newAccount,
+          isConnected: accounts.length > 0,
+          balance: '0' // 重置余额
+        }));
+        
+        // 只在有新账户时启动监听
+        if (newAccount) {
+          startBalanceMonitoring();
+        } else {
+          stopBalanceMonitoring();
+        }
+      }
+    };
+
+    // 初始设置
     provider.on('accountsChanged', handleAccountsChanged);
-    return () => provider.removeListener?.('accountsChanged', handleAccountsChanged);
-  }, [walletState.provider]);
+    
+    // 如果已经有账户连接，立即开始监听
+    if (walletState.account) {
+      startBalanceMonitoring();
+    }
+
+    // 清理函数
+    return () => {
+      console.log('清理余额监听');
+      provider.removeListener?.('accountsChanged', handleAccountsChanged);
+      stopBalanceMonitoring();
+    };
+  }, [walletState.provider, walletState.account]); // 添加walletState.account作为依赖
+
+
+  // // 监听账户变化（兼容多钱包）
+  // useEffect(() => {
+  //   const provider = walletState.provider || window.ethereum;
+  //   if (!provider) return;
+
+  //   const handleAccountsChanged = (accounts: string[]) => {
+  //     console.log("账户变化了----:", accounts);
+
+  //     setWalletState(prev => ({
+  //       ...prev,
+  //       account: accounts[0] || null,
+  //       isConnected: accounts.length > 0,
+  //     }));
+  //   };
+
+  //   provider.on('accountsChanged', handleAccountsChanged);
+  //   return () => provider.removeListener?.('accountsChanged', handleAccountsChanged);
+  // }, [walletState.provider]);
+
+
 
   // 监听链变化
   useEffect(() => {
@@ -135,12 +315,15 @@ export default function WalletConnectKitProvider({
     if (!provider) return;
 
     const handleChainChanged = async (hexChainId: string ) => {
+      console.log("chainChanged====", hexChainId)
+
       const chainId = parseInt(hexChainId, 16);
       console.log("切换到新链:", hexChainId, chainId);
 
       setWalletState(prev => ({...prev, chainId}))
 
       const balance = await provider.request({method: "eth_getBalance", params: [walletState.account, "latest"]});
+      console.log("balance====", balance, walletState.account)
       setWalletState(prev => ({...prev, amount: balance, chainId}));
     }
 
@@ -149,7 +332,7 @@ export default function WalletConnectKitProvider({
     return () => {
       provider.removeListener?.('chainChanged', handleChainChanged)
     }
-  }, [walletState.provider, walletState.account])
+  }, [walletState.provider, walletState.chainId, walletState.account])
 
   // 初始化时自动重连
   useEffect(() => {
@@ -182,7 +365,7 @@ export default function WalletConnectKitProvider({
     };
 
     tryReconnect();
-  }, [walletState.isConnected, walletState.type]);
+  }, []);
 
   // 工具函数
   function getNativeCurrencySymbol(chainId: string) {

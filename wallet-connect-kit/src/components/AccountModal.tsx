@@ -1,4 +1,5 @@
 import { useWallet } from "../hooks/useWallet"
+import { formatWeiToEth } from "../utils"
 
 export function AccountModal({onClose}: {onClose: () => void}) {
     const {account, amount, symbol, disconnectWallet} = useWallet()
@@ -11,7 +12,7 @@ export function AccountModal({onClose}: {onClose: () => void}) {
                 </button>
                 <div className='mt-16'>
                     <p className='text-lg font-bold text-center'>{account?.slice(0, 6) + '...' + account?.slice(-4)}</p>
-                    <p className='text-gray-600 text-center mt-2'>{amount? `${amount}` : '0'} {symbol}</p>
+                    <p className='text-gray-600 text-center mt-2'>{amount? `${formatWeiToEth(amount)} ${symbol}` : '0'} {symbol}</p>
                 </div>
                 <div className='mt-8 flex items-center justify-between flex-auto'>
                     <button className="mr-4" onClick={() => {

@@ -1,49 +1,37 @@
-import { useEffect, useState } from 'react'
-import { SUPPORTED_WALLETS } from '../constants/wallets'
+import { useMemo } from 'react'
+import { SUPPORTED_WALLETS, type WalletType } from '../constants/wallets'
 import { useWallet } from '../hooks/useWallet'
-
-interface WalletGroup {
-  installed: Wallet[]
-  popular: Wallet[]
-}
 
 type Wallet = typeof SUPPORTED_WALLETS[keyof typeof SUPPORTED_WALLETS]
 
 export function WalletModal({ onClose }: { onClose: () => void }) {
   const { connectWallet } = useWallet()
-  const [walletGroups, setWalletGroups] = useState<WalletGroup>({
-    installed: [],
-    popular: []
-  })
+  // const [walletGroups, setWalletGroups] = useState<WalletGroup>({
+  //   installed: [],
+  //   popular: []
+  // })
 
-
-  // 检测已安装的钱包
-  useEffect(() => {
+  const walletGroups = useMemo(() => {
+    // 1. 检测已安装的钱包
     const installedWallets = Object.values(SUPPORTED_WALLETS).filter(wallet => {
       switch(wallet.id) {
-        case 'metamask':
-          return !!window.ethereum?.isMetaMask
-        case 'coinbase':
-          return !!window.coinbaseWalletExtension?.isCoinbaseWallet
-        case 'okx':
-          return !!window.okxwallet?.isOkxWallet
-        case 'phantom':
-          return !!window.phantom?.ethereum?.isPhantom
-        default:
-          return false
+        case 'metamask': return !!window.ethereum?.isMetaMask;
+        case 'coinbase': return !!window.coinbaseWalletExtension?.isCoinbaseWallet;
+        case 'okx': return !!window.okxwallet?.isOkxWallet;
+        case 'phantom': return !!window.phantom?.ethereum?.isPhantom;
+        default: return false;
       }
-    })
-
-    // 主流钱包（已安装的除外）
+    });
+    // 2. 主流的钱包（已安装的除外）
     const popularWallets = Object.values(SUPPORTED_WALLETS).filter(
       wallet => !installedWallets.some(w => w.id === wallet.id)
-    )
-
-    setWalletGroups({
+    );
+    // 3. 返回分组结果
+    return {
       installed: installedWallets,
-      popular: popularWallets
-    })
-  }, [])
+      popular: popularWallets,
+    };
+  }, []);
 
   return (
     <div className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center">
@@ -62,7 +50,7 @@ export function WalletModal({ onClose }: { onClose: () => void }) {
                   key={wallet.id}
                   wallet={wallet}
                   onClick={() => {
-                    connectWallet(wallet.id)
+                    connectWallet(wallet.id as WalletType)
                     onClose()
                   }}
                 />
