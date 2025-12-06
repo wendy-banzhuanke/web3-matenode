@@ -1,6 +1,6 @@
 import { createContext } from 'react'
 import type { WalletType } from '../constants/wallets'
-import type { EthereumProvider } from '../type/ethereum'
+import type { EthereumProvider } from '../type/index'
 
 export interface WalletState {
     provider?: null | EthereumProvider,

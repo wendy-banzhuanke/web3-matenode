@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { WalletContext, type WalletState } from '../context/WalletContext'
 import { SUPPORTED_WALLETS, type WalletType } from '../constants/wallets'
-import type { EthereumProvider } from '../type/ethereum'
+import type { EthereumProvider } from '../type/index'
 
 type Error = {
   code: number

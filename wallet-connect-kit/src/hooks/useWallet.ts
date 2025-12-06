@@ -9,6 +9,7 @@ export function useWallet() {
   }
 
   return {
+    provider: context.provider,
     account: context.account,
     amount: context.amount,
     symbol: context.symbol,

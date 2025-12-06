@@ -1,10 +1,8 @@
 import { defineConfig } from 'vite'
+import dts from 'vite-plugin-dts';
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-// import dts from 'vite-plugin-dts'
-
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react({
@@ -13,33 +11,30 @@ export default defineConfig({
       },
     }),
     tailwindcss(),
+    dts({
+      tsconfigPath: './tsconfig.build.json', // 使用专门的构建配置
+      insertTypesEntry: true, // 生成类型入口
+      rollupTypes: true,      // *确保类型文件被纳入dist
+      entryRoot: 'src', // 明确指定入口根目录
+      strictOutput: true, // 强制类型输出
+      pathsToAliases: false, // 禁用路径别名转换（优先保证类型生成）
+    })
   ],
   build: {
     lib: {
       entry: './src/index.ts',
       name: 'WalletConnectKit',
-      fileName: 'wallet-connect-kit',
+      fileName: (format) => `wallet-connect-kit.${format}.js`,
     },
     rollupOptions: {
-      external: ['react', 'react-dom'],
+      external: ['react', 'react-dom', 'tailwindcss'],
       output: {
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',
+          tailwindcss: 'tailwindcss',
         },
       },
-    }
+    },
   }
 })
-
-// package.json
-// "main": "./dist/wallet-connect-kit.umd.js",
-  // "module": "./dist/wallet-connect-kit.es.js",
-  // "types": "./dist/index.d.ts",
-
-
-  
-  // "peerDependencies": {
-  //   "react": "^19.2.0",
-  //   "react-dom": "^19.2.0"
-  // }

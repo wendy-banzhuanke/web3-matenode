@@ -1,11 +1,26 @@
 {
-  "name": "wallet-connect-kit",
-  "private": true,
-  "version": "0.1.0",
+  "name": "@wendy-banzhuanke/wallet-connect-kit",
+  "version": "0.1.11",
   "type": "module",
   "main": "./dist/wallet-connect-kit.umd.js",
   "module": "./dist/wallet-connect-kit.es.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/wallet-connect-kit.es.js",
+      "require": "./dist/wallet-connect-kit.umd.js"
+    },
+    "./style.css": "./dist/wallet-connect-kit.css"
+  },
+  "style": "./dist/wallet-connect-kit.css",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/",
+    "access": "public"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -15,8 +30,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.17",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "tailwindcss": "^4.1.17"
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
@@ -31,10 +45,13 @@
     "globals": "^16.5.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "vite-plugin-dts": "^4.5.4",
+    "tailwindcss": "^4.1.17"
   },
   "peerDependencies": {
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "tailwindcss": "^4.0.0"
   }
 }
