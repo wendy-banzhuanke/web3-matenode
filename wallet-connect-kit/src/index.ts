@@ -5,19 +5,18 @@ import './index.css';
 
 // Components
 import WalletConnectKitProvider from './provider/WalletConnectProvider';
-export { WalletConnectKitProvider };
+import { ConnectButton } from './components/ConnectButton';
+export { WalletConnectKitProvider, ConnectButton };
 
 // Hooks
 import { useWallet } from './hooks/useWallet';
 import { useChains } from './hooks/useChains';
-import { ConnectButton } from './components/ConnectButton';
-export { useWallet, useChains, ConnectButton };
+export { useWallet, useChains };
 
 // Types
 export type { WalletState } from './context/WalletContext';
 export type { WalletType } from './constants/wallets';
 export type { EthereumProvider } from './type/index';
-
 
 // Default Export
 export default {

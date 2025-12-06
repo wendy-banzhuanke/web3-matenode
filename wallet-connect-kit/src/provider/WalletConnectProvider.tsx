@@ -20,11 +20,7 @@ const INITIAL_STATE = {
   symbol: null
 }
 
-export default function WalletConnectKitProvider({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function WalletConnectKitProvider({ children }: { children: React.ReactNode }) {
   // 初始化状态（从 sessionStorage 恢复）
   const [walletState, setWalletState] = useState<WalletState>(() => {
     if (typeof window === 'undefined') return INITIAL_STATE;
@@ -63,52 +59,40 @@ export default function WalletConnectKitProvider({
     }
   }
 
-  const connectWallet = async (walletType: string) => {
-    const wallet = SUPPORTED_WALLETS[walletType.toUpperCase() as WalletType];
-    if (!wallet.detector()) throw new Error(`${wallet.name} not detected`);
-
-    const provider = getProvider(walletType);
-    if (!provider) return;
-
+  const fetchBalance = async (provider: EthereumProvider, account: string) => {
     try {
-      const accounts = await provider.request({ method: 'eth_requestAccounts'});
-      if (!accounts.length) return;
-      
-      const chainId = await provider!.request({ method: 'eth_chainId' })
-      const balance = await provider!.request({ method: "eth_getBalance", params: [accounts[0], "latest"] }); // "latest" 表示最新区块
-
-      const symbol = getNativeCurrencySymbol(chainId);
-      setWalletState({
-        provider,
-        account: accounts[0],
-        amount:  balance, // BigInt(balance),
-        symbol,
-        chainId: parseInt(chainId, 16),
-        isConnected: true,
-        type: walletType,
+      const balance = await provider.request({ 
+        method: "eth_getBalance", 
+        params: [account, "latest"] 
       });
-
-    } catch (error: unknown) {
-      console.error('连接钱包失败', error);
-      if ((error as Error)?.code === 4001) alert('用户拒绝了连接请求');
+      return balance as string;
+    } catch (error) {
+      console.error('获取余额失败:', error);
+      return null;
     }
   };
 
-  const disconnectWallet = async () => {
-    const { provider, type } = walletState;
-    if (!provider) return;
+  // 轮询余额更新
+  useEffect(() => {
+    const { provider, account, isConnected } = walletState;
+    if (!isConnected || !provider || !account) return;
 
-    try {
-      if (type === 'metamask') {
-        await provider.request({ method: 'wallet_revokePermissions', params: [{ eth_accounts: {} }]});
-      } else if (['coinbase', 'okx', 'phantom'].includes(type as string)) {
-        await provider.disconnect?.();
+    const updateBalance = async () => {
+      const newBalance = await fetchBalance(provider, account);
+      if (newBalance) {
+        setWalletState(prev => {
+          if (prev.amount === newBalance) return prev;
+          return { ...prev, amount: newBalance };
+        });
       }
-    } finally {
-      sessionStorage.removeItem('walletState');
-      setWalletState(INITIAL_STATE);
     }
-  };
+
+    updateBalance();
+
+    const intervalId = setInterval(updateBalance, 3000); // 每3秒轮询一次
+
+    return () => clearInterval(intervalId);
+  }, [walletState.provider, walletState.account, walletState.isConnected]);
 
   // 监听账户变化
   useEffect(() => {
@@ -135,7 +119,10 @@ export default function WalletConnectKitProvider({
     if (!provider) return;
 
     const handleChainChanged = async (hexChainId: string ) => {
-      const chainId = parseInt(hexChainId, 16);
+      let chainId = hexChainId as number|string;
+      if(walletState.type !== 'phantom' && walletState.type !== 'coinbase') {
+        chainId = parseInt(hexChainId, 16);
+      }
       console.log("切换到新链:", hexChainId, chainId);
 
       setWalletState(prev => ({...prev, chainId}))
@@ -149,7 +136,7 @@ export default function WalletConnectKitProvider({
     return () => {
       provider.removeListener?.('chainChanged', handleChainChanged)
     }
-  }, [walletState.provider, walletState.account])
+  }, [walletState.provider, walletState.account, walletState.type])
 
   // 初始化时自动重连
   useEffect(() => {
@@ -159,7 +146,7 @@ export default function WalletConnectKitProvider({
     }
     
     const tryReconnect = async () => {
-      const provider = window.ethereum || window.coinbaseWalletExtension || window.okxwallet;
+      const provider = getProvider(walletState.type || 'metamask'); // window.ethereum || window.coinbaseWalletExtension || window.okxwallet;
       if (!provider) return;
       
       try {
@@ -204,6 +191,55 @@ export default function WalletConnectKitProvider({
     if (provider.isPhantom) return 'phantom' as WalletType;
     return null;
   }
+
+  // 连接钱包
+  const connectWallet = async (walletType: string) => {
+    const wallet = SUPPORTED_WALLETS[walletType.toUpperCase() as WalletType];
+    if (!wallet.detector()) throw new Error(`${wallet.name} not detected`);
+
+    const provider = getProvider(walletType);
+    if (!provider) return;
+
+    try {
+      const accounts = await provider.request({ method: 'eth_requestAccounts'});
+      if (!accounts.length) return;
+      
+      const chainId = await provider!.request({ method: 'eth_chainId' })
+      const balance = await provider!.request({ method: "eth_getBalance", params: [accounts[0], "latest"] }); // "latest" 表示最新区块
+
+      const symbol = getNativeCurrencySymbol(chainId);
+      setWalletState({
+        provider,
+        account: accounts[0],
+        amount:  balance, // BigInt(balance),
+        symbol,
+        chainId: parseInt(chainId, 16),
+        isConnected: true,
+        type: walletType,
+      });
+
+    } catch (error: unknown) {
+      console.error('连接钱包失败', error);
+      if ((error as Error)?.code === 4001) alert('用户拒绝了连接请求');
+    }
+  };
+
+  // 断开链接
+  const disconnectWallet = async () => {
+    const { provider, type } = walletState;
+    if (!provider) return;
+
+    try {
+      if (type === 'metamask') {
+        await provider.request({ method: 'wallet_revokePermissions', params: [{ eth_accounts: {} }]});
+      } else if (['coinbase', 'okx', 'phantom'].includes(type as string)) {
+        await provider.disconnect?.();
+      }
+    } finally {
+      sessionStorage.removeItem('walletState');
+      setWalletState(INITIAL_STATE);
+    }
+  };
 
   return (
     <WalletContext.Provider value={{

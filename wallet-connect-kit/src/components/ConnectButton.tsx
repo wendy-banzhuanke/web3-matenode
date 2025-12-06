@@ -22,8 +22,6 @@ export function ConnectButton() {
         setShowAccountModal(true)
     }
 
-    
-
     return (
         <>
             {

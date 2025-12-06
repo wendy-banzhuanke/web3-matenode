@@ -1,6 +1,6 @@
 {
   "name": "@wendy-banzhuanke/wallet-connect-kit",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "type": "module",
   "main": "./dist/wallet-connect-kit.umd.js",
   "module": "./dist/wallet-connect-kit.es.js",

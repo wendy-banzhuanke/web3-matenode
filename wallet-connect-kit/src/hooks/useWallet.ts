@@ -17,5 +17,6 @@ export function useWallet() {
     isConnected: context.isConnected,
     connectWallet: context.connectWallet,
     disconnectWallet: context.disconnectWallet,
+    type: context.type,
   }
 }
