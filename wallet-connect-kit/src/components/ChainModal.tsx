@@ -7,10 +7,11 @@
  */
 import { useChains } from "../hooks/useChains";
 import { useWallet } from "../hooks/useWallet";
+import type { EthereumProvider } from '../type/index'
 
 export function ChainModal({ onClose }: { onClose: () => void }) {
-  const { chainId } = useWallet();
-  const { switchChain, supportedChains } = useChains();
+  const { chainId, provider } = useWallet();
+  const { switchChain, supportedChains } = useChains({provider: provider as EthereumProvider});
 
   return (
     <div className="fixed inset-0 bg-black/30 ">
