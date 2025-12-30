@@ -18,3 +18,9 @@
 
 # Hardhat coverage reports
 /coverage
+
+/ignition/deployments
+
+.env
+.env.local
+.env*

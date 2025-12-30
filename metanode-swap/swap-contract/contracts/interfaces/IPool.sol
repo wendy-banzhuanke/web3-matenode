@@ -19,7 +19,7 @@ interface ISwapCallback {
 
 interface IPool {
 
-  event Mint(address sender, address indexed owner, uint128 amount, uint128 amount0, uint128 amount1);
+  event Mint(address sender, address indexed owner, uint128 amount, uint256 amount0, uint256 amount1);
 
   event Collect(address indexed owner, address recipient, uint256 amount0, uint256 amount1);
 
@@ -69,11 +69,15 @@ interface IPool {
     address recipient,
     uint128 amount0Requested,
     uint128 amount1Requested
-  ) external returns (uint256 amount0, uint256 amount1);
+  ) external returns (uint128 amount0, uint128 amount1);
 
-  function burn(
-    uint128 amount
-  ) external returns (uint256 amount0, uint256 amount1);
+  function burn(uint128 amount) external returns (uint256 amount0, uint256 amount1);
 
-  function swap(address recipient, bool zeroForOne, int256 amountSpecified, uint160 sqrtPriceLimitX96, bytes calldata data) external returns (int256 amount0, int256 amount1);
+  function swap(
+    address recipient,
+    bool zeroForOne,
+    int256 amountSpecified,
+    uint160 sqrtPriceLimitX96,
+    bytes calldata data
+  ) external returns (int256 amount0, int256 amount1);
 }
