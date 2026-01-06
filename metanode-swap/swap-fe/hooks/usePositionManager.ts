@@ -33,15 +33,15 @@ export function usePositionManager() {
   });
 
   console.log("rawPositions====", address)
-  const positions = rawPositions
+//   const positions = rawPositions
 
-//   const positions = useMemo(() => {
-//     if (!rawPositions || !address) return [];
-//     // The ABI return type for getAllPositions is an array of structs
-//     return (rawPositions as PositionInfo[]).filter(
-//       (pos) => pos.owner.toLowerCase() === address.toLowerCase()
-//     );
-//   }, [rawPositions, address]);
+  const positions = useMemo(() => {
+    if (!rawPositions || !address) return [];
+    // The ABI return type for getAllPositions is an array of structs
+    return (rawPositions as PositionInfo[]).filter(
+      (pos) => pos.owner.toLowerCase() === address.toLowerCase()
+    );
+  }, [rawPositions, address]);
 
    console.log("rawPositions====", rawPositions)
 

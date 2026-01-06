@@ -20,7 +20,7 @@ export default function Position() {
   const { getTokenSymbol, rawPools } = usePoolManager();
 
   const [addPositionOpen, setAddPositionOpen] = useState(false);
-  const [rows, setRows] = useState<PositionRow[]>([]);
+  const [rowPositions, setRows] = useState<PositionRow[]>([]);
 
   useEffect(() => {
     const fetchPositionsData = async () => {
@@ -57,6 +57,14 @@ export default function Position() {
     fetchPositionsData();
   }, [positions, rawPools]);
 
+  const handleRemovePosition = () => {
+
+  }
+
+  const handleCollectPosition = () => {
+
+  }
+
   return (
     <div>
       <h1 className='font-bold text-xl pb-2'>Position</h1>
@@ -75,7 +83,7 @@ export default function Position() {
             </TableRow>
           </TableHead>
           <TableBody>
-          {rows.map((row, index) => (
+          {rowPositions.map((row, index) => (
             <TableRow
                 key={`${row.token0Addr}-${row.token1Addr}-${row.tickLower}-${row.tickUpper}-${index}`}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -88,8 +96,8 @@ export default function Position() {
               <TableCell align="right">{row.currentPrice}</TableCell>
               <TableCell align="right" className="w-[230px]">
                 <div className="w-full flex justify-between">
-                  <Button variant="outlined" onClick={()=>setAddPositionOpen(true)}>Remove</Button>
-                  <Button variant="outlined" onClick={()=>setAddPositionOpen(true)}>Collect</Button>
+                  <Button variant="outlined" onClick={handleRemovePosition}>Remove</Button>
+                  <Button variant="outlined" onClick={handleCollectPosition}>Collect</Button>
                 </div>
               </TableCell>
             </TableRow>
