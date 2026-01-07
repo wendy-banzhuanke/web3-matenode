@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { TickMath } from "@uniswap/v3-sdk";
 import {
   Box,
   Button,
@@ -37,6 +38,7 @@ export default function Swap() {
   const [amountOut, setAmountOut] = useState<string>("");
   const [loadingQuote, setLoadingQuote] = useState(false);
   const [quotingError, setQuotingError] = useState<string | null>(null);
+  const [currentPool, setCurrentPool] = useState<PoolType | undefined>(undefined);
 
   // Balances
   const { data: balanceIn, refetch: refetchBalanceIn } = useReadContract({
@@ -74,6 +76,7 @@ export default function Swap() {
         (p.token0.toLowerCase() === tokenOut.toLowerCase() &&
           p.token1.toLowerCase() === tokenIn.toLowerCase())
     );
+    setCurrentPool(pool)
     return pool ? pool.index : null;
   }, [rawPools, tokenIn, tokenOut]);
 
@@ -95,13 +98,27 @@ export default function Swap() {
             return;
         }
 
+        // const currentSqrtPriceX96 = currentPool?.sqrtPriceX96 as bigint; // 从池子获取当前价格
+        // const sqrtPriceLimitX96 = currentSqrtPriceX96 * 90n / 100n; // 允许价格下跌10%
+        // const minAllowedPrice = currentSqrtPriceX96 * 90n / 100n;
+        // const sqrtPriceLimitX96 = minAllowedPrice > TickMath.MIN_SQRT_RATIO 
+        //   ? minAllowedPrice 
+        //   : TickMath.MIN_SQRT_RATIO;
+
+        const sqrtPriceLimitX96: bigint = tokenIn.toLowerCase() < tokenOut.toLowerCase()
+				? BigInt(TickMath.MIN_SQRT_RATIO.toString()) + 1n
+				: BigInt(TickMath.MAX_SQRT_RATIO.toString()) - 1n;
+        // const sqrtPriceLimitX96: bigint = minAllowedPrice < TickMath.MAX_SQRT_RATIO
+				// ? BigInt(TickMath.MIN_SQRT_RATIO.toString()) + 1n
+				// : BigInt(TickMath.MAX_SQRT_RATIO.toString()) - 1n;
+
         // QuoteExactInputParams
         const params = {
           tokenIn: tokenIn as `0x${string}`,
           tokenOut: tokenOut as `0x${string}`,
-          indexPath: [poolIndex] as unknown as number[], // viem expects number[] for uint32[]
+          indexPath: [poolIndex] as unknown as number[], 
           amountIn: amountInBigInt,
-          sqrtPriceLimitX96: 0n, // 0 means no limit
+          sqrtPriceLimitX96: sqrtPriceLimitX96, // 0 means no limit
         };
 
         const result = await publicClient.readContract({
@@ -111,7 +128,6 @@ export default function Swap() {
           args: [params],
         });
 
-        // Viem returns the value directly for single output
         const quotedAmount = result as unknown as bigint;
         setAmountOut(formatEther(quotedAmount));
       } catch (error) {
@@ -149,6 +165,10 @@ export default function Swap() {
   const handleSwap = () => {
     if (!tokenIn || !tokenOut || !amountIn || poolIndex === null || !address) return;
 
+    const currentSqrtPriceX96 = currentPool?.sqrtPriceX96 as bigint; // 从池子获取当前价格
+    const sqrtPriceLimitX96 = currentSqrtPriceX96 * 90n / 100n; // 允许价格下跌10%
+    const amountOutMinimum = parseEther(amountOut || "0") * 90n / 100n;
+
     writeContract.mutate(
       {
         address: SWAP_ROUTER_ADDRESS,
@@ -162,8 +182,8 @@ export default function Swap() {
             recipient: address,
             deadline: BigInt(Math.floor(Date.now() / 1000) + 1200), // 20 mins
             amountIn: parseEther(amountIn),
-            amountOutMinimum: 0n, // Slippage 0 for now (unsafe for prod but ok for demo)
-            sqrtPriceLimitX96: 0n,
+            amountOutMinimum: amountOutMinimum, 
+            sqrtPriceLimitX96: sqrtPriceLimitX96, 
           },
         ],
       },
@@ -176,6 +196,9 @@ export default function Swap() {
           refetchBalanceOut();
         },
         onError: (err) => console.error("Swap error", err),
+        onSettled: (data) => {
+          console.log("Swap settled==", data);
+        }
       }
     );
   };
@@ -183,7 +206,7 @@ export default function Swap() {
   const handleSwitchTokens = () => {
     setTokenIn(tokenOut);
     setTokenOut(tokenIn);
-    setAmountIn(""); // Clear amount as ratio changes
+    setAmountIn(""); 
     setAmountOut("");
   };
 
@@ -212,7 +235,7 @@ export default function Swap() {
       <Card sx={{ maxWidth: 480, width: "100%", borderRadius: 4, boxShadow: 3 }}>
         <CardContent sx={{ p: 3 }}>
           <Typography variant="h5" fontWeight="bold" mb={2}>
-            Swap
+            Swap allowanceIn: {allowanceIn !== undefined ? formatEther(allowanceIn) : "0"}
           </Typography>
 
           {/* From Token */}
@@ -330,7 +353,7 @@ export default function Swap() {
               variant="contained"
               fullWidth
               size="large"
-              onClick={handleApprove}
+              onClick={handleSwap} 
               disabled={isSwapDisabled}
               sx={{ borderRadius: 3, py: 1.5, fontSize: "1.1rem", textTransform: "none" }}
             >

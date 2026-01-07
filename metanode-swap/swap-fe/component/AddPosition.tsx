@@ -110,15 +110,12 @@ export default function AddPosition({
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!address || !selectedPoolIndex) return;
+    console.log("handleSubmit-mint-address==", address)
 
     try {
         const pool = availablePools.find(p => p.index.toString() === selectedPoolIndex);
         if (!pool) return;
 
-        // Ensure token order matches pool's definition
-        // The PositionManager expects tokens and index to match the pool key
-        // We must pass the exact token0 and token1 from the pool struct
-        
         writeContract.mutate({
             address: process.env.NEXT_PUBLIC_POSITION_MANAGER_ADDRESS as `0x${string}`,
             abi: PositionManagerArtifact.abi,
