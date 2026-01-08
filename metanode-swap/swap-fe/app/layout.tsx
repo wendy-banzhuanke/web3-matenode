@@ -10,6 +10,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Material Icons 字体链接 */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/icon?family=Material+Icons"
+        />
+      </head>
       <body className="font-sans antialiased"> 
         <Providers> {children} </Providers>
       </body>

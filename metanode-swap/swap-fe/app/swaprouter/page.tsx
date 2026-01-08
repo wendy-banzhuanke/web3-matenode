@@ -9,13 +9,13 @@ import {
   CardContent,
   Typography,
   TextField,
-  IconButton,
+  IconButton
 } from "@mui/material";
-// import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { useConnection, useWriteContract, useReadContract, usePublicClient } from "wagmi";
 import { parseEther, formatEther, erc20Abi } from "viem";
 import SwapRouterArtifact from "@/abi/SwapRouter.json";
 import TokenSelect from "@/component/TokenSelect";
+import SettingSlippage from "@/component/SettingSlippage";
 import { usePoolManager } from "@/hooks/usePoolManager";
 import { PoolType } from "@/types";
 
@@ -39,6 +39,7 @@ export default function Swap() {
   const [loadingQuote, setLoadingQuote] = useState(false);
   const [quotingError, setQuotingError] = useState<string | null>(null);
   const [currentPool, setCurrentPool] = useState<PoolType | undefined>(undefined);
+  const [slippage, setSlippage] = useState<number>(5.5);
 
   // Balances
   const { data: balanceIn, refetch: refetchBalanceIn } = useReadContract({
@@ -104,10 +105,13 @@ export default function Swap() {
         // const sqrtPriceLimitX96 = minAllowedPrice > TickMath.MIN_SQRT_RATIO 
         //   ? minAllowedPrice 
         //   : TickMath.MIN_SQRT_RATIO;
+        const isToken0ToToken1 = tokenIn.toLowerCase() < tokenOut.toLowerCase();
+        const MIN_SQRT_RATIO = BigInt(TickMath.MIN_SQRT_RATIO.toString());
+        const MAX_SQRT_RATIO = BigInt(TickMath.MAX_SQRT_RATIO.toString());
+        const sqrtPriceLimitX96 = isToken0ToToken1 
+          ? MIN_SQRT_RATIO + 1n  // 允许价格跌到最低比例
+          : MAX_SQRT_RATIO - 1n; // 允许价格上涨到最高比例
 
-        const sqrtPriceLimitX96: bigint = tokenIn.toLowerCase() < tokenOut.toLowerCase()
-				? BigInt(TickMath.MIN_SQRT_RATIO.toString()) + 1n
-				: BigInt(TickMath.MAX_SQRT_RATIO.toString()) - 1n;
         // const sqrtPriceLimitX96: bigint = minAllowedPrice < TickMath.MAX_SQRT_RATIO
 				// ? BigInt(TickMath.MIN_SQRT_RATIO.toString()) + 1n
 				// : BigInt(TickMath.MAX_SQRT_RATIO.toString()) - 1n;
@@ -165,10 +169,19 @@ export default function Swap() {
   const handleSwap = () => {
     if (!tokenIn || !tokenOut || !amountIn || poolIndex === null || !address) return;
 
-    const currentSqrtPriceX96 = currentPool?.sqrtPriceX96 as bigint; // 从池子获取当前价格
-    const sqrtPriceLimitX96 = currentSqrtPriceX96 * 90n / 100n; // 允许价格下跌10%
+    // const currentSqrtPriceX96 = currentPool?.sqrtPriceX96 as bigint; // 从池子获取当前价格
+    // const sqrtPriceLimitX96 = currentSqrtPriceX96 * 90n / 100n; // 允许价格下跌10%
+    
+    // TODO 90n / 100n 要写成动态的，根据页面传入的滑点来动态计算
     const amountOutMinimum = parseEther(amountOut || "0") * 90n / 100n;
-
+    
+    const isToken0ToToken1 = tokenIn.toLowerCase() < tokenOut.toLowerCase();
+    const MIN_SQRT_RATIO = BigInt(TickMath.MIN_SQRT_RATIO.toString());
+    const MAX_SQRT_RATIO = BigInt(TickMath.MAX_SQRT_RATIO.toString());
+    const sqrtPriceLimitX96 = isToken0ToToken1 
+      ? MIN_SQRT_RATIO + 1n  // 允许价格跌到最低比例
+      : MAX_SQRT_RATIO - 1n; // 允许价格上涨到最高比例
+          
     writeContract.mutate(
       {
         address: SWAP_ROUTER_ADDRESS,
@@ -234,8 +247,9 @@ export default function Swap() {
     >
       <Card sx={{ maxWidth: 480, width: "100%", borderRadius: 4, boxShadow: 3 }}>
         <CardContent sx={{ p: 3 }}>
-          <Typography variant="h5" fontWeight="bold" mb={2}>
-            Swap allowanceIn: {allowanceIn !== undefined ? formatEther(allowanceIn) : "0"}
+          <Typography variant="h5" align="justify" fontWeight="bold" mb={2} className="w-[100%] flex items-center justify-between">
+            <span className="mr-2">Swap</span>
+            <SettingSlippage slippage={slippage} setSlippage={setSlippage} />
           </Typography>
 
           {/* From Token */}
@@ -274,7 +288,12 @@ export default function Swap() {
                 {/* $0.00 (Fiat placeholder) */}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Balance: {balanceIn ? parseFloat(formatEther(balanceIn)).toFixed(4) : "0.00"}
+                {
+                  allowanceIn !== undefined ?  `Approve: ${formatEther(allowanceIn)}` : "Approve:0.00"
+                }
+                <span className="ml-2">
+                  Balance: {balanceIn ? parseFloat(formatEther(balanceIn)).toFixed(4) : "0.00"}
+                </span>
               </Typography>
             </Box>
           </Box>
