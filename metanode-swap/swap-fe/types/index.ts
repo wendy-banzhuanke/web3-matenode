@@ -40,6 +40,7 @@ export interface PositionType {
 }
 
 export interface PositionRow {
+  id: string,
   token0: string;
   token1: string;
   token0Addr: string;

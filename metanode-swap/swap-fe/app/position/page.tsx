@@ -16,7 +16,7 @@ import { formatFeeTier, formatPriceRange, getCurrentPrice, liquidityToAmounts } 
 import AddPosition from "@/component/AddPosition";
 
 export default function Position() {
-  const { positions, isLoading, error } = usePositionManager();
+  const { positions, isLoading, error, burnPosition, collectPosition } = usePositionManager();
   const { getTokenSymbol, rawPools } = usePoolManager();
 
   const [addPositionOpen, setAddPositionOpen] = useState(false);
@@ -40,6 +40,7 @@ export default function Position() {
         const currentTick = pool ? Number(pool.tick) : 0;
 
         return { 
+          id: position.id.toString(),
           token0: token0 as string || "UNKNOWN",
           token1: token1 as string || "UNKNOWN",
           token0Addr: position.token0,
@@ -57,12 +58,13 @@ export default function Position() {
     fetchPositionsData();
   }, [positions, rawPools]);
 
-  const handleRemovePosition = () => {
-
+  const handleRemovePosition = (positionId: bigint) => {
+    burnPosition(positionId);
   }
 
-  const handleCollectPosition = () => {
-
+  const handleCollectPosition = (positionId: bigint) => {
+    console.log("positionId====", positionId)
+    collectPosition(positionId);
   }
 
   return (
@@ -79,6 +81,7 @@ export default function Position() {
               <TableCell align="right">Fee tier</TableCell>
               <TableCell align="right">Set price range</TableCell>
               <TableCell align="right">Current price</TableCell>
+              <TableCell align="right">Liquidity</TableCell>
               <TableCell align="right">Action</TableCell>
             </TableRow>
           </TableHead>
@@ -94,10 +97,11 @@ export default function Position() {
               <TableCell align="right">{row.feeTier}</TableCell>
               <TableCell align="right">{formatPriceRange(row.tickLower,row.tickUpper)}</TableCell>
               <TableCell align="right">{row.currentPrice}</TableCell>
+              <TableCell align="right">{row.liquidity}</TableCell>
               <TableCell align="right" className="w-[230px]">
                 <div className="w-full flex justify-between">
-                  <Button variant="outlined" onClick={handleRemovePosition}>Remove</Button>
-                  <Button variant="outlined" onClick={handleCollectPosition}>Collect</Button>
+                  <Button variant="outlined" onClick={()=>handleRemovePosition(BigInt(row.id))}>Remove</Button>
+                  <Button variant="outlined" onClick={()=>handleCollectPosition(BigInt(row.id))}>Collect</Button>
                 </div>
               </TableCell>
             </TableRow>

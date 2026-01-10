@@ -84,68 +84,57 @@ export default function Swap() {
   // Quote
   useEffect(() => {
     const fetchQuote = async () => {
-      if (!amountIn || !tokenIn || !tokenOut || poolIndex === null || !publicClient) {
+      if (!amountIn || !tokenIn || !tokenOut || poolIndex === null || !publicClient || !currentPool?.sqrtPriceX96) {
         setAmountOut("");
         return;
       }
-
       setLoadingQuote(true);
       setQuotingError(null);
       try {
         const amountInBigInt = parseEther(amountIn);
         if (amountInBigInt === 0n) {
-            setAmountOut("");
-            setLoadingQuote(false);
-            return;
+          setAmountOut("");
+          setLoadingQuote(false);
+          return;
         }
-
-        // const currentSqrtPriceX96 = currentPool?.sqrtPriceX96 as bigint; // 从池子获取当前价格
-        // const sqrtPriceLimitX96 = currentSqrtPriceX96 * 90n / 100n; // 允许价格下跌10%
-        // const minAllowedPrice = currentSqrtPriceX96 * 90n / 100n;
-        // const sqrtPriceLimitX96 = minAllowedPrice > TickMath.MIN_SQRT_RATIO 
-        //   ? minAllowedPrice 
-        //   : TickMath.MIN_SQRT_RATIO;
+        // 动态计算 sqrtPriceLimitX96（基于滑点）
+        const slippageBasisPoints = BigInt(Math.floor(slippage * 100)); // 将滑点转换为整数（如 5.5% -> 550）
         const isToken0ToToken1 = tokenIn.toLowerCase() < tokenOut.toLowerCase();
+        const currentSqrtPriceX96 = BigInt(currentPool.sqrtPriceX96);
+        // 根据滑点计算价格限制
+        const sqrtPriceLimitX96 = isToken0ToToken1
+          ? currentSqrtPriceX96 * (10000n - slippageBasisPoints) / 10000n  // 卖出方向：允许价格下跌
+          : currentSqrtPriceX96 * (10000n + slippageBasisPoints) / 10000n; // 买入方向：允许价格上涨
+        // 边界保护（不低于MIN或超过MAX）
         const MIN_SQRT_RATIO = BigInt(TickMath.MIN_SQRT_RATIO.toString());
         const MAX_SQRT_RATIO = BigInt(TickMath.MAX_SQRT_RATIO.toString());
-        const sqrtPriceLimitX96 = isToken0ToToken1 
-          ? MIN_SQRT_RATIO + 1n  // 允许价格跌到最低比例
-          : MAX_SQRT_RATIO - 1n; // 允许价格上涨到最高比例
-
-        // const sqrtPriceLimitX96: bigint = minAllowedPrice < TickMath.MAX_SQRT_RATIO
-				// ? BigInt(TickMath.MIN_SQRT_RATIO.toString()) + 1n
-				// : BigInt(TickMath.MAX_SQRT_RATIO.toString()) - 1n;
-
-        // QuoteExactInputParams
-        const params = {
-          tokenIn: tokenIn as `0x${string}`,
-          tokenOut: tokenOut as `0x${string}`,
-          indexPath: [poolIndex] as unknown as number[], 
-          amountIn: amountInBigInt,
-          sqrtPriceLimitX96: sqrtPriceLimitX96, // 0 means no limit
-        };
-
+        const clampedSqrtPriceLimitX96 = isToken0ToToken1
+          ? sqrtPriceLimitX96 > MIN_SQRT_RATIO ? sqrtPriceLimitX96 : MIN_SQRT_RATIO + 1n
+          : sqrtPriceLimitX96 < MAX_SQRT_RATIO ? sqrtPriceLimitX96 : MAX_SQRT_RATIO - 1n;
+        // 调用合约报价
         const result = await publicClient.readContract({
           address: SWAP_ROUTER_ADDRESS,
           abi: SwapRouterArtifact.abi,
           functionName: "quoteExactInput",
-          args: [params],
+          args: [{
+            tokenIn: tokenIn as `0x${string}`,
+            tokenOut: tokenOut as `0x${string}`,
+            indexPath: [poolIndex] as unknown as number[],
+            amountIn: amountInBigInt,
+            sqrtPriceLimitX96: clampedSqrtPriceLimitX96,
+          }],
         });
-
-        const quotedAmount = result as unknown as bigint;
-        setAmountOut(formatEther(quotedAmount));
+        setAmountOut(formatEther(result as unknown as bigint));
       } catch (error) {
         console.error("Quote error:", error);
-        setQuotingError("Failed to fetch quote");
-        setAmountOut("");
+        setQuotingError("Failed to fetch quote" + (poolIndex === null ? " (No pool found)" : ""));
       } finally {
         setLoadingQuote(false);
       }
     };
-
-    const timer = setTimeout(fetchQuote, 500); // Debounce
+    const timer = setTimeout(fetchQuote, 500);
     return () => clearTimeout(timer);
-  }, [amountIn, tokenIn, tokenOut, poolIndex, publicClient]);
+  }, [amountIn, tokenIn, tokenOut, poolIndex, publicClient, currentPool, slippage]); // 添加 slippage 依赖
 
   const handleApprove = () => {
     if (!tokenIn) return;
@@ -166,22 +155,82 @@ export default function Swap() {
     );
   };
 
-  const handleSwap = () => {
-    if (!tokenIn || !tokenOut || !amountIn || poolIndex === null || !address) return;
+  // const handleSwap = () => {
+  //   if (!tokenIn || !tokenOut || !amountIn || poolIndex === null || !address) return;
 
-    // const currentSqrtPriceX96 = currentPool?.sqrtPriceX96 as bigint; // 从池子获取当前价格
-    // const sqrtPriceLimitX96 = currentSqrtPriceX96 * 90n / 100n; // 允许价格下跌10%
+  //   // const currentSqrtPriceX96 = currentPool?.sqrtPriceX96 as bigint; // 从池子获取当前价格
+  //   // const sqrtPriceLimitX96 = currentSqrtPriceX96 * 90n / 100n; // 允许价格下跌10%
     
-    // TODO 90n / 100n 要写成动态的，根据页面传入的滑点来动态计算
-    const amountOutMinimum = parseEther(amountOut || "0") * 90n / 100n;
+  //   // TODO 90n / 100n 要写成动态的，根据页面传入的滑点来动态计算
+  //   // const amountOutMinimum = parseEther(amountOut || "0") * 90n / 100n;
+  //   // 计算 amountOutMinimum：amountOut * (1 - slippage%)
+  //   const slippageBasisPoints = BigInt(Math.floor(slippage * 100)); // 将滑点转换为整数（如 5.5% -> 550）
+  //   const amountOutMinimum = parseEther(amountOut || "0") * (10000n - slippageBasisPoints) / 10000n;
+
     
+  //   const isToken0ToToken1 = tokenIn.toLowerCase() < tokenOut.toLowerCase();
+  //   const MIN_SQRT_RATIO = BigInt(TickMath.MIN_SQRT_RATIO.toString());
+  //   const MAX_SQRT_RATIO = BigInt(TickMath.MAX_SQRT_RATIO.toString());
+  //   const sqrtPriceLimitX96 = isToken0ToToken1 
+  //     ? MIN_SQRT_RATIO + 1n  // 允许价格跌到最低比例
+  //     : MAX_SQRT_RATIO - 1n; // 允许价格上涨到最高比例
+          
+  //   writeContract.mutate(
+  //     {
+  //       address: SWAP_ROUTER_ADDRESS,
+  //       abi: SwapRouterArtifact.abi,
+  //       functionName: "exactInput",
+  //       args: [
+  //         {
+  //           tokenIn: tokenIn as `0x${string}`,
+  //           tokenOut: tokenOut as `0x${string}`,
+  //           indexPath: [poolIndex] as unknown as number[],
+  //           recipient: address,
+  //           deadline: BigInt(Math.floor(Date.now() / 1000) + 1200), // 20 mins
+  //           amountIn: parseEther(amountIn),
+  //           amountOutMinimum: amountOutMinimum, 
+  //           sqrtPriceLimitX96: sqrtPriceLimitX96, 
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       onSuccess: () => {
+  //         console.log("Swap success");
+  //         setAmountIn("");
+  //         setAmountOut("");
+  //         refetchBalanceIn();
+  //         refetchBalanceOut();
+  //       },
+  //       onError: (err) => console.error("Swap error", err),
+  //       onSettled: (data) => {
+  //         console.log("Swap settled==", data);
+  //       }
+  //     }
+  //   );
+  // };
+
+  const handleSwap = () => {
+    if (!tokenIn || !tokenOut || !amountIn || poolIndex === null || !address || !currentPool?.sqrtPriceX96) return;
+
+    // 计算 amountOutMinimum
+    const slippageBasisPoints = BigInt(Math.floor(slippage * 100)); // 滑点转整数（5.5% → 550）
+    const amountOutMinimum = parseEther(amountOut || "0") * (10000n - slippageBasisPoints) / 10000n;
+
+    // 计算动态 sqrtPriceLimitX96
     const isToken0ToToken1 = tokenIn.toLowerCase() < tokenOut.toLowerCase();
+    const currentSqrtPriceX96 = BigInt(currentPool.sqrtPriceX96);
+    const sqrtPriceLimitX96 = isToken0ToToken1
+      ? currentSqrtPriceX96 * (10000n - slippageBasisPoints) / 10000n
+      : currentSqrtPriceX96 * (10000n + slippageBasisPoints) / 10000n;
+
+    // 边界保护 通过uniswap v3 sdk 的MIN_SQRT_RATIO和MAX_SQRT_RATIO来保护价格不超出范围
     const MIN_SQRT_RATIO = BigInt(TickMath.MIN_SQRT_RATIO.toString());
     const MAX_SQRT_RATIO = BigInt(TickMath.MAX_SQRT_RATIO.toString());
-    const sqrtPriceLimitX96 = isToken0ToToken1 
-      ? MIN_SQRT_RATIO + 1n  // 允许价格跌到最低比例
-      : MAX_SQRT_RATIO - 1n; // 允许价格上涨到最高比例
-          
+    const clampedSqrtPriceLimitX96 = isToken0ToToken1
+      ? sqrtPriceLimitX96 > MIN_SQRT_RATIO ? sqrtPriceLimitX96 : MIN_SQRT_RATIO + 1n
+      : sqrtPriceLimitX96 < MAX_SQRT_RATIO ? sqrtPriceLimitX96 : MAX_SQRT_RATIO - 1n;
+
+    // 执行Swap
     writeContract.mutate(
       {
         address: SWAP_ROUTER_ADDRESS,
@@ -195,8 +244,8 @@ export default function Swap() {
             recipient: address,
             deadline: BigInt(Math.floor(Date.now() / 1000) + 1200), // 20 mins
             amountIn: parseEther(amountIn),
-            amountOutMinimum: amountOutMinimum, 
-            sqrtPriceLimitX96: sqrtPriceLimitX96, 
+            amountOutMinimum: amountOutMinimum,
+            sqrtPriceLimitX96: clampedSqrtPriceLimitX96,
           },
         ],
       },
@@ -209,9 +258,6 @@ export default function Swap() {
           refetchBalanceOut();
         },
         onError: (err) => console.error("Swap error", err),
-        onSettled: (data) => {
-          console.log("Swap settled==", data);
-        }
       }
     );
   };
@@ -249,7 +295,10 @@ export default function Swap() {
         <CardContent sx={{ p: 3 }}>
           <Typography variant="h5" align="justify" fontWeight="bold" mb={2} className="w-[100%] flex items-center justify-between">
             <span className="mr-2">Swap</span>
-            <SettingSlippage slippage={slippage} setSlippage={setSlippage} />
+            <div className="flex items-center text-sm text-red-400">
+              (Slippage: {slippage}%)
+              <SettingSlippage slippage={slippage} setSlippage={setSlippage} />
+            </div>
           </Typography>
 
           {/* From Token */}

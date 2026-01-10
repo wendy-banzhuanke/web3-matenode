@@ -1,26 +1,25 @@
-import React, { useState } from "react";
+import React from "react";
 import {
-  Box,
   Button,
-  Card,
-  CardContent,
   Typography,
-  TextField,
-  IconButton,
   Icon,
   Popover,
   InputAdornment,
   OutlinedInput,
-  FormHelperText,
   FormControl,
-  InputLabel
+  InputLabel,
 } from "@mui/material";
 
-export default function SettingSlippage({slippage, setSlippage}: {slippage: number, setSlippage: (slippage: number) => void}) {
+export default function SettingSlippage({
+  slippage,
+  setSlippage,
+}: {
+  slippage: number;
+  setSlippage: (slippage: number) => void;
+}) {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null
   );
-//   const [slippage, setSlippage] = useState(5.5);
 
   const open = Boolean(anchorEl);
   const popoverId = open ? "simple-popover" : undefined;
@@ -33,15 +32,18 @@ export default function SettingSlippage({slippage, setSlippage}: {slippage: numb
 
   const handleClose = () => {
     setAnchorEl(null);
+    if (!slippage) {
+      setSlippage(5.5);
+    }
   };
 
   const handleAutoSlippage = () => {
     setSlippage(5.5);
   };
 
-    const handleSlippageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      setSlippage(Number(event.target.value));
-    };
+  const handleSlippageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSlippage(Number(event.target.value));
+  };
 
   return (
     <div className="relative">
@@ -62,9 +64,14 @@ export default function SettingSlippage({slippage, setSlippage}: {slippage: numb
           horizontal: "left",
         }}
       >
-        <Typography sx={{ p: 2 }} className="flex justify-between items-center">
-          <Button onClick={handleAutoSlippage} variant={slippage == 5.5 ? "contained" : "outlined"}>Auto</Button>
-          <FormControl sx={{ m: 1, width: "25ch" }} variant="outlined">
+        <div className="flex justify-between items-center p-2">
+          <Button
+            onClick={handleAutoSlippage}
+            variant={slippage == 5.5 ? "contained" : "outlined"}
+          >
+            Auto
+          </Button>
+          <FormControl sx={{ m: 1, width: "15ch" }} variant="outlined">
             <InputLabel htmlFor="outlined-adornment-password">
               Slippage
             </InputLabel>
@@ -75,9 +82,23 @@ export default function SettingSlippage({slippage, setSlippage}: {slippage: numb
               label="Slippage"
               value={slippage}
               onChange={handleSlippageChange}
+              onBlur={() => {
+                const formattedValue = parseFloat(slippage.toString());
+                if (isNaN(formattedValue)) {
+                    setSlippage(5.5); // 默认滑点
+                    return;
+                }
+
+                const _slippageStr = slippage.toString()
+                // "5." -> "5.00"
+                if (_slippageStr && !_slippageStr.includes('.')) {
+                    // setSlippage(`${slippage}.00`);
+                    setSlippage(Number(formattedValue.toFixed(2)));
+                }
+              }}
             />
           </FormControl>
-        </Typography>
+        </div>
       </Popover>
     </div>
   );
