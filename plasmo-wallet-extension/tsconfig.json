@@ -7,7 +7,7 @@
     ".plasmo/index.d.ts",
     "./**/*.ts",
     "./**/*.tsx"
-  ],
+, "src/popup copy.tsx.bak"  ],
   "compilerOptions": {
     "paths": {
       "~*": [
