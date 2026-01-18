@@ -246,8 +246,8 @@ export const useWalletStore = create<WalletStore>()(
 
           const feeData = await provider.getFeeData()
 
-          const finalMaxPriorityFee = parseUnits("2", "gwei")  
-          const finalMaxFee = parseUnits("5", "gwei")         
+          const finalMaxPriorityFee = parseUnits("10", "gwei")  // parseUnits("2", "gwei")  
+          const finalMaxFee = parseUnits("100", "gwei")    // parseUnits("5", "gwei")         
 
           const tx = await signer.sendTransaction({
             to,
