@@ -1,10 +1,12 @@
 import cssText from "data-text:~style.css"
 import type { PlasmoCSConfig } from "plasmo"
+import "./content-script/wallet-injector"
 
 import { CountButton } from "~features/count-button"
 
 export const config: PlasmoCSConfig = {
-  matches: ["<all_urls>"]
+  matches: ["<all_urls>"],
+  world: "MAIN" 
 }
 
 /**
@@ -19,6 +21,7 @@ export const config: PlasmoCSConfig = {
  * 2. Convert all `rem` units to pixel values using a fixed base font size, ensuring consistent styling
  *    regardless of the host page's font size.
  */
+
 export const getStyle = (): HTMLStyleElement => {
   const baseFontSize = 16
 
@@ -40,7 +43,6 @@ export const getStyle = (): HTMLStyleElement => {
 const PlasmoOverlay = () => {
   return (
     <div className="plasmo-z-50 plasmo-flex plasmo-fixed plasmo-top-32 plasmo-right-8">
-      <CountButton />
     </div>
   )
 }

@@ -55,8 +55,8 @@ interface TokenBalance {
   balance: string
 }
 
-const currentEVN = 'sepolia' // TODO
-const NETWORKS = {
+export const currentEVN = 'sepolia' // TODO
+export const NETWORKS = {
   sepolia: {
     chainId: 11155111,
     rpc: "https://eth-sepolia.g.alchemy.com/v2/WFvF03dNhdfLqcGeWwSNH"
