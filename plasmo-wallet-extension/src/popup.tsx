@@ -1,16 +1,36 @@
-import { useEffect } from "react"
-import { useWalletStore } from "~sotres/wallet"
-// import "~style.css"
+import { useEffect, useState } from "react"
+import { useWalletStore } from "~stores/wallet"
+import Dashboard from "./components/dashboard"
+import PasswordSetupModal from "./components/PasswordSetupModal"
+
+import "~style.css"
 
 function IndexPopup() {
+  const { createWallet, wallet, isInitialized } = useWalletStore()
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
 
-  const { createWallet, wallet } = useWalletStore()
-  
+  console.log("isInitialized", isInitialized, wallet)
+
   return (
-    <div className="plasmo-flex plasmo-items-center plasmo-justify-center plasmo-h-16 plasmo-w-40">
-      <button onClick={async () => await createWallet()}>请先链接钱包</button>
-      <div>
-        {JSON.stringify(wallet)}
+    // plasmo-flex plasmo-flex-column plasmo-items-center 
+    <div className="plasmo-p-4 plasmo-justify-center plasmo-h-[600px] plasmo-w-[380px]">
+      <div className="plasmo-mt-4">
+        {!wallet ? (
+          <button 
+            onClick={async () => {
+              await createWallet()
+              setShowPasswordModal(true)
+            }}
+            className="plasmo-p-2 plasmo-bg-blue-500 plasmo-text-white plasmo-rounded">
+            创建钱包
+          </button>
+        ) : isInitialized ? (
+          <Dashboard />
+        ) : (
+          <PasswordSetupModal onClose={() => setShowPasswordModal(false)} />
+        )}
+        
+        {showPasswordModal && <PasswordSetupModal onClose={() => setShowPasswordModal(false)} />}
       </div>
     </div>
   )
